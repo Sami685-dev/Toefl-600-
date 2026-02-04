@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEFL ITP Simulation - Secure Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        
+        /* Layout & Scrollbars */
+        .passage-box { 
+            line-height: 1.8; 
+            max-height: 500px; 
+            overflow-y: auto; 
+            padding: 1.5rem; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 0.75rem; 
+            font-size: 0.95rem; 
+            color: #334155;
+        }
+        .passage-box::-webkit-scrollbar { width: 8px; }
+        .passage-box::-webkit-scrollbar-track { background: #f1f5f9; }
+        .passage-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .passage-box::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Custom Radio Buttons */
+        input[type="radio"]:checked + div { 
+            background-color: #eff6ff; 
+            border-color: #2563eb; 
+            color: #1e40af;
+        }
+        input[type="radio"]:checked + div .radio-circle {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        input[type="radio"]:checked + div .radio-circle::after {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* Tracker Grid */
+        .tracker-grid::-webkit-scrollbar { width: 4px; }
+        .tracker-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+        .btn-current { border: 2px solid #2563eb; color: #2563eb; background: #fff; transform: scale(1.1); font-weight: bold; }
+        .btn-answered { background: #2563eb; color: white; border: 1px solid #2563eb; }
+        .btn-unanswered { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; }
+        .btn-unanswered:hover { background: #e2e8f0; }
+        
+        /* Animation for Token Error */
+        .shake { animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col text-slate-800">
+
+    <nav class="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold">T</div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight">TOEFL Simulation</h1>
+                    <p class="text-xs text-slate-400">Integrated Course Edition</p>
+                </div>
+            </div>
+            <div id="globalTimer" class="bg-white/10 px-4 py-2 rounded-lg border border-white/10 backdrop-blur-sm">
+                <span class="text-[10px] uppercase text-slate-300 font-semibold tracking-wider">Time Remaining</span>
+                <div class="text-xl font-bold tabular-nums font-mono" id="totalTimeDisplay">115:00</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 w-full flex-grow">
+        
+        <div id="startScreen" class="max-w-2xl mx-auto mt-12 bg-white rounded-2xl shadow-xl border border-slate-200 p-8 md:p-12 text-center">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">TOEFL ITP Practice Test</h2>
+            <p class="text-slate-600 mb-8">Full simulation covering Listening, Structure, and Reading comprehension.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-8 text-left">
+                <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                    <div class="font-bold text-blue-900">Section 1</div>
+                    <div class="text-sm text-blue-700">Listening (50 Qs)</div>
+                    <div class="text-xs text-blue-500 mt-1">35 Minutes</div>
+                </div>
+                <div class="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                    <div class="font-bold text-purple-900">Section 2</div>
+                    <div class="text-sm text-purple-700">Structure (40 Qs)</div>
+                    <div class="text-xs text-purple-500 mt-1">25 Minutes</div>
+                </div>
+                <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <div class="font-bold text-emerald-900">Section 3</div>
+                    <div class="text-sm text-emerald-700">Reading (50 Qs)</div>
+                    <div class="text-xs text-emerald-500 mt-1">55 Minutes</div>
+                </div>
+            </div>
+
+            <div id="tokenSection" class="max-w-xs mx-auto mb-6">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Enter Access Token</label>
+                <div class="flex gap-2">
+                    <input type="text" id="tokenInput" placeholder="Ex: 123456" 
+                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition uppercase text-center font-mono tracking-widest">
+                    <button onclick="verifyToken()" class="px-4 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 font-bold transition">
+                        Verify
+                    </button>
+                </div>
+                <p id="tokenError" class="hidden text-red-500 text-xs mt-2 font-bold">Invalid Token! Please try again.</p>
+            </div>
+            <div id="startBtnContainer" class="hidden">
+                <div class="text-emerald-600 font-bold text-sm mb-4">✓ Token Verified. Ready to start.</div>
+                <button onclick="startTest()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-1">
+                    Start Examination
+                </button>
+            </div>
+        </div>
+
+        <div id="testScreen" class="hidden flex flex-col lg:flex-row gap-8 items-start">
+            
+            <div class="flex-1 w-full">
+                <div class="flex justify-between items-center mb-6 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex gap-1 overflow-x-auto no-scrollbar">
+                        <button id="navSec1" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-500 bg-transparent cursor-default">Listening</button>
+                        <button id="navSec2" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-500 bg-transparent cursor-default">Structure</button>
+                        <button id="navSec3" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-500 bg-transparent cursor-default">Reading</button>
+                    </div>
+                    <div class="px-4 py-1">
+                        <span class="text-xs text-slate-400 uppercase font-bold">Section Time</span>
+                        <div id="sectionTimer" class="font-mono font-bold text-slate-800 text-lg">35:00</div>
+                    </div>
+                </div>
+
+                <div id="audioPlayerContainer" class="hidden mb-6 bg-blue-600 p-4 rounded-xl border border-blue-700 shadow-md text-white">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-white/20 p-2 rounded-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                        </div>
+                        <div class="w-full">
+                            <p class="text-xs text-blue-100 font-semibold uppercase tracking-wider mb-1">Listening Section Audio</p>
+                           <audio id="mainAudio" controls class="w-full h-8 block rounded outline-none" style="filter: invert(1);" preload="auto">
+    <source src="https://drive.google.com/uc?export=download&id=1g6Rgfucqs2KidQRx_OkVGfR6es2nnN3F" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+                                <source src="part-a_Q2aIQMoh.mp3" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    </div>
+                </div>
+                <div id="questionContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 min-h-[400px]">
+                    </div>
+
+                <div class="mt-6 flex justify-between gap-4">
+                    <button onclick="prevQ()" class="px-6 py-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl font-semibold transition">Back</button>
+                    <button id="nextBtn" onclick="nextQ()" class="px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-semibold transition shadow-md">Next</button>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-72 flex-shrink-0">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sticky top-24">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-slate-800">Question Tracker</h3>
+                        <span id="progressText" class="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-600">0/50</span>
+                    </div>
+                    
+                    <div class="flex gap-3 mb-4 text-[10px] text-slate-500 justify-center">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-blue-600 rounded-full"></span> Done</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 border-2 border-blue-600 rounded-full"></span> Active</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-slate-200 rounded-full"></span> Empty</span>
+                    </div>
+
+                    <div id="trackerGrid" class="tracker-grid grid grid-cols-5 gap-2 max-h-[300px] overflow-y-auto pr-1">
+                        </div>
+
+                    <button id="submitBtnSidebar" onclick="submitTest()" class="hidden mt-6 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-emerald-500/30">
+                        Finish & Grade
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsScreen" class="hidden max-w-4xl mx-auto mt-8">
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="bg-slate-900 p-8 text-center text-white">
+                    <h2 class="text-3xl font-bold mb-2">Examination Results</h2>
+                    <p class="text-slate-400">Score Report</p>
+                    
+                    <div class="mt-8 mb-4 inline-block relative">
+                        <svg class="w-32 h-32 transform -rotate-90">
+                            <circle cx="64" cy="64" r="56" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-700" />
+                            <circle cx="64" cy="64" r="56" stroke="currentColor" stroke-width="8" fill="transparent" class="text-blue-500" stroke-dasharray="351" stroke-dashoffset="100" />
+                        </svg>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                            <span id="finalScore" class="text-4xl font-bold">500</span>
+                            <span class="block text-[10px] text-slate-400 uppercase">Total Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 grid md:grid-cols-3 gap-6">
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 text-center">
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Listening</div>
+                        <div id="scoreSec1" class="text-2xl font-bold text-slate-800">0</div>
+                        <div id="correctSec1" class="text-sm text-slate-500 mt-1">0/50 Correct</div>
+                    </div>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 text-center">
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Structure</div>
+                        <div id="scoreSec2" class="text-2xl font-bold text-slate-800">0</div>
+                        <div id="correctSec2" class="text-sm text-slate-500 mt-1">0/40 Correct</div>
+                    </div>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 text-center">
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Reading</div>
+                        <div id="scoreSec3" class="text-2xl font-bold text-slate-800">0</div>
+                        <div id="correctSec3" class="text-sm text-slate-500 mt-1">0/50 Correct</div>
+                    </div>
+                </div>
+
+                <div class="p-8 bg-slate-50 border-t border-slate-100 text-center">
+                    <button onclick="location.reload()" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition">Retake Test</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+<script>
+/* ================= CONFIGURATION ================= */
+// Set Token Password Here
+const ACCESS_TOKEN = "593771"; 
+
+/* ================= DATA BANK (Complete 140 Questions) ================= */
+
+// LISTENING (1-50): Part A (Scripts 1-30), Part B (31-38), Part C (39-50)
+const Q_LISTENING = [
+    // PART A (1-30)
+    {q:"What does the man imply?", a:{A:"The exam will be very straightforward.",B:"The woman has no reason to worry.",C:"The exam will be challenging.",D:"The professor is retiring this semester."}},
+    {q:"What does the woman mean?", a:{A:"The coffee pot is empty.",B:"There is plenty of fresh coffee.",C:"The coffee is too hot to drink.",D:"She wants the man to make more coffee."}},
+    {q:"What does the man mean?", a:{A:"He didn't attend the lecture.",B:"He thought the lecture was interesting.",C:"He fell asleep during the session.",D:"He also found the lecture very long and boring."}},
+    {q:"What does the woman imply?", a:{A:"The professor is generally lenient with deadlines.",B:"A medical reason is the only way to get an extension.",C:"The man should just submit the paper tomorrow.",D:"The professor will not accept the paper under any circumstances."}},
+    {q:"What does the man mean?", a:{A:"He is not happy with his new role.",B:"He has a lot of difficult work to do.",C:"He is looking for a different job.",D:"He has already finished all his tasks."}},
+    {q:"What does the woman imply?", a:{A:"The man should take even more credits.",B:"The man might be overextending himself.",C:"The man is a very good student.",D:"Twenty-one credits is the standard amount."}},
+    {q:"What does the man mean?", a:{A:"The statement is already finished.",B:"He will start the statement during lunch.",C:"The statement is currently being prepared.",D:"The meeting was canceled."}},
+    {q:"What does the woman mean?", a:{A:"The other competitors are very strong.",B:"The competition rules are very strict.",C:"She is confident she will win.",D:"The competition was postponed."}},
+    {q:"What does the man mean?", a:{A:"He is very lucky to have the day off.",B:"He is frustrated by the situation.",C:"He knew the office would be closed.",D:"He doesn't need the check until next week."}},
+    {q:"What does the woman mean?", a:{A:"The elevator is very fast.",B:"The stairs are currently being cleaned.",C:"The elevator is not working.",D:"The man should use the elevator alone."}},
+    {q:"What does the man mean?", a:{A:"The semester felt very long.",B:"He didn't notice the time passing.",C:"The semester passed very quickly.",D:"He is happy the semester is ending."}},
+    {q:"What does the woman mean?", a:{A:"She has many staplers to lend.",B:"She doesn't have a stapler available.",C:"The man should buy a new stapler.",D:"She is using her stapler right now."}},
+    {q:"What does the man imply?", a:{A:"The woman should eat more food.",B:"The woman is too busy to start something new.",C:"The business venture is a great idea.",D:"The woman should move to Pare immediately."}},
+    {q:"What does the woman suggest?", a:{A:"The man should buy a new calculator.",B:"Lending her calculator to the man.",C:"Asking the professor for a spare calculator.",D:"Postponing the quiz until later."}},
+    {q:"What does the man mean?", a:{A:"The training was very relaxed.",B:"The participants had to stand up all day.",C:"The training required constant attention and effort.",D:"He didn't enjoy the training session."}},
+    {q:"What does the woman suggest the man do?", a:{A:"Cancel the leadership event.",B:"Seek external funding from businesses.",C:"Ask the university for a larger grant.",D:"Reduce the event's expenses significantly."}},
+    {q:"What does the man imply?", a:{A:"The club members are excited about the price changes.",B:"The volatility is causing concern among investors.",C:"Gold is the safest investment right now.",D:"The club decided to sell all their gold holdings."}},
+    {q:"What does the woman suggest the man do?", a:{A:"Wait until the next year to apply.",B:"Buy new shoes for the interview.",C:"Improve his resume immediately.",D:"Apply for a different internship instead."}},
+    {q:"What does the man mean?", a:{A:"Consumers are buying more goods than before.",B:"The value of the currency has increased.",C:"Consumers can afford fewer things now.",D:"The report was surprisingly positive."}},
+    {q:"What had the woman previously assumed?", a:{A:"The meeting would be in the auditorium.",B:"The meeting would be canceled.",C:"The meeting was scheduled for a different time.",D:"The faculty lounge was unavailable."}},
+    {q:"What does the man imply?", a:{A:"The exam will be very straightforward.",B:"The woman has no reason to worry.",C:"The exam will be challenging.",D:"The professor is retiring this semester."}},
+    {q:"What does the woman suggest?", a:{A:"Keep calling until someone answers.",B:"Visit the office physically.",C:"Send an email to the office instead.",D:"Wait for the office to call back."}},
+    {q:"What happened to the workshop?", a:{A:"It was canceled permanently.",B:"It has been moved to a later date.",C:"It is starting earlier than expected.",D:"The location was changed."}},
+    {q:"What does the woman suggest the man do?", a:{A:"Search for the transcript again.",B:"Apply for a different internship.",C:"Obtain a new copy of his transcript.",D:"Wait until the next day to take action."}},
+    {q:"What does the man mean?", a:{A:"They will definitely not finish on time.",B:"They have plenty of time left.",C:"Completing the project on time is possible but difficult.",D:"They should postpone the project until next week."}},
+    {q:"What does the woman suggest?", a:{A:"Taking the next bus instead.",B:"Walking slowly to the bus station.",C:"Hurrying to catch the bus.",D:"Canceling the trip to Kampung Inggris."}},
+    {q:"What does the man imply?", a:{A:"The library does not have any books on the topic.",B:"The specific books requested are currently unavailable.",C:"The professor's recommendations are in the basement.",D:"The library is closed for renovations."}},
+    {q:"What does the woman mean?", a:{A:"She found the workshop very easy.",B:"The material was too difficult for her to understand.",C:"She enjoyed the workshop very much.",D:"The workshop was held in a tall building."}},
+    {q:"What is the man's suggestion?", a:{A:"Purchase the laptop immediately.",B:"Buy the laptop from a different store.",C:"Delay the purchase to get a better price.",D:"Borrow a laptop from the library instead."}},
+    {q:"What does the woman imply?", a:{A:"She is not interested in the results.",B:"The analysis took longer than she expected.",C:"She knew the results would be positive.",D:"She wants the man to repeat the analysis."}},
+    
+    // PART B (31-38)
+    {q:"What is the main subject of the conversation?", a:{A:"A competition for board game designers.",B:"An upcoming seminar on Sharia-compliant ESG.",C:"A job interview at KNEKS.",D:"A coffee meeting to discuss stock valuations."}},
+    {q:"Why is the man interested in the event?", a:{A:"He wants to apply for an internship.",B:"He needs to complete a mandatory faculty requirement.",C:"He wants to use the information for his board game project.",D:"He is the one organizing the seminar."}},
+    {q:"Who will be the keynote speaker?", a:{A:"A student from the finance club.",B:"A professor from the strategic management department.",C:"A senior analyst from a national committee.",D:"A representative from a board game company."}},
+    {q:"What is the deadline for registration?", a:{A:"Next Tuesday.",B:"This Friday.",C:"By the end of the month.",D:"Immediately after the conversation."}},
+    {q:"What project are the speakers discussing?", a:{A:"A digital marketing workshop in the city.",B:"A community service program in a village.",C:"A recruitment drive for 51 new employees.",D:"A training session on high-level macroeconomics."}},
+    {q:"What specific training topic is mentioned for the local businesses?", a:{A:"Advanced technical analysis.",B:"QRIS and marketplace account setup.",C:"How to write a formal research paper.",D:"Strategic management for multinational corporations."}},
+    {q:"What is the man’s current concern?", a:{A:"The volunteers are not interested.",B:"The TOR has not been written yet.",C:"The transportation logistics are not confirmed.",D:"He doesn't know how to use digital payments."}},
+    {q:"When will the final briefing take place?", a:{A:"This afternoon.",B:"Next Friday.",C:"This Saturday.",D:"Right before they leave for the village."}},
+    
+    // PART C (39-50)
+    {q:"What is the main topic of the lecture?", a:{A:"The history of the Indonesian stock exchange.",B:"The screening process for Sharia-compliant stocks.",C:"How to calculate interest rates in a bank.",D:"The biography of a famous Sharia analyst."}},
+    {q:"What is the maximum limit for interest-based debt in Sharia screening?", a:{A:"10% of total revenue.",B:"25% of total liabilities.",C:"45% of total assets.",D:"50% of total equity."}},
+    {q:"According to the speaker, what must stay below 10%?", a:{A:"The company's total debt.",B:"Non-halal revenue.",C:"The number of board members.",D:"The annual dividend payout."}},
+    {q:"Who would find this information most useful?", a:{A:"A manager of a gambling casino.",B:"A Sharia stock analyst.",C:"A historian studying the 19th century.",D:"A local villager in Mandalawangi."}},
+    {q:"What is the primary purpose of the IE Matrix?", a:{A:"To calculate the net profit margin of a company.",B:"To position a firm's business units for strategic planning.",C:"To hire new employees for the marketing department.",D:"To design a new logo for a startup."}},
+    {q:"What do the x and y axes of the IE Matrix represent?", a:{A:"Revenue and expenses.",B:"Time and productivity.",C:"Internal and external factor evaluations.",D:"Supply and demand."}},
+    {q:"What strategy is recommended for a business unit in Cell 1?", a:{A:"Divest immediately.",B:"Harvest all remaining assets.",C:"Grow and build through market penetration.",D:"Reduce the workforce by half."}},
+    {q:"How many cells are there in an IE Matrix?", a:{A:"Three.",B:"Five.",C:"Nine.",D:"Twelve."}},
+    {q:"What does the acronym ESG stand for?", a:{A:"Environmental, Social, and Governance.",B:"Economic, Social, and Growth.",C:"Energy, Security, and Globalism.",D:"Ethics, Sustainability, and Guidance."}},
+    {q:"What is the focus of the board games mentioned in the talk?", a:{A:"Teaching players how to play chess.",B:"Balancing business profit with ESG goals.",C:"Developing fast-reflex motor skills.",D:"Memorizing historical dates of the industrial revolution."}},
+    {q:"According to the speaker, how can a player earn extra points in the game?", a:{A:"By increasing their company's debt.",B:"By ignoring corporate governance.",C:"By reducing carbon emissions.",D:"By winning a physical race."}},
+    {q:"Why are board games being used as a teaching tool?", a:{A:"Because they are cheaper than textbooks.",B:"Because they help students visualize the impact of their decisions.",C:"Because students prefer games over passing exams.",D:"Because the professor doesn't want to lecture anymore."}}
+];
+
+// STRUCTURE (1-40)
+const Q_STRUCTURE = [
+    // 1-15 (Standard Sentence Completion)
+    {q:"Rarely _______ a company's market capitalization grow so exponentially without a corresponding increase in tangible assets.",a:{A:"does",B:"is",C:"has",D:"it has"}},
+    {q:"It is imperative that the Federal Reserve _______ the interest rates to mitigate the looming risk of stagflation.",a:{A:"adjusts",B:"adjust",C:"adjusted",D:"adjusting"}},
+    {q:"_______ by the sudden volatility in the cryptocurrency market, many institutional investors withdrew their hedge funds.",a:{A:"To alarm",B:"Alarming",C:"Alarmed",D:"They were alarmed"}},
+    {q:"Not only _______ the fiscal deficit, but the new economic policy also sought to devalue the currency.",a:{A:"it reduced",B:"did it reduce",C:"reduced it",D:"was it reduced"}},
+    {q:"The board requested that the audit _______ by an independent firm before the annual meeting.",a:{A:"be conducted",B:"is conducted",C:"conducted",D:"will be conducted"}},
+    {q:"_______ the complexity of the derivative markets, the novice trader sought counsel from a financial analyst.",a:{A:"Because",B:"Due to",C:"Despite",D:"Although"}},
+    {q:"Neither the inflationary pressures _______ the disruption in the supply chain was enough to halt GDP growth.",a:{A:"or",B:"and",C:"nor",D:"but also"}},
+    {q:"_______ in the 1930s, the Great Depression significantly altered the paradigm of Keynesian economics.",a:{A:"Occurring",B:"Occurred",C:"It occurred",D:"When it occurred"}},
+    {q:"So intense _______ between the two tech giants that the antitrust regulators had to intervene.",a:{A:"the competition was",B:"was the competition",C:"the competition",D:"is the competition"}},
+    {q:"The more diversified a portfolio is, _______ the overall systemic risk becomes.",a:{A:"the lesser",B:"less",C:"the less",D:"is less"}},
+    {q:"Digital currencies, _______ by blockchain technology, offer a decentralized alternative to fiat money.",a:{A:"which supported",B:"supporting",C:"supported",D:"they are supported"}},
+    {q:"Only after the audit was completed _______ to realize the extent of the embezzlement.",a:{A:"the management began",B:"began the management",C:"did the management begin",D:"the management did begin"}},
+    {q:"Had the treasury anticipated the fluctuation, they _______ more aggressive hedging strategies.",a:{A:"would adopt",B:"would have adopted",C:"will adopt",D:"had adopted"}},
+    {q:"The price of Brent crude oil is influenced by geopolitical tensions, _______, and OPEC production quotas.",a:{A:"how the market demands",B:"market demand",C:"demanding by the market",D:"that the market demands"}},
+    {q:"_______ is often overlooked by startup founders is the importance of long-term scalability.",a:{A:"What",B:"That",C:"Which",D:"It"}},
+
+    // 16-40 (Error Recognition - Your Custom Data)
+    {q:"Identify the error:\n\nThe fluctuating (A) prices of gold, which is (B) influenced by global geopolitical tensions (C) and market speculation, causes (D) significant volatility.",a:{A:"(A) fluctuating",B:"(B) is",C:"(C) tensions",D:"(D) causes"}},
+    {q:"Identify the error:\n\nDuring the fiscal (A) year, the corporation focused on maximizing (B) profits, expanding (C) market share, and to improve (D) consumer relations.",a:{A:"(A) fiscal",B:"(B) maximizing",C:"(C) expanding",D:"(D) to improve"}},
+    {q:"Identify the error:\n\nDespite (A) the economic recession (B) was severe, the manufacturing sector managed to maintain (C) its production levels due to (D) automation.",a:{A:"(A) Despite",B:"(B) was",C:"(C) maintain",D:"(D) due to"}},
+    {q:"Identify the error:\n\nThe investor (A) decided to sell their (B) shares after (C) the company reported a substantial (D) loss in the fourth quarter.",a:{A:"(A) investor",B:"(B) their",C:"(C) after",D:"(D) substantial"}},
+    {q:"Identify the error:\n\nFound (A) in the late 19th century, the company has grown (B) from a small family business into a multinational (C) conglomerate with thousands (D) of employees.",a:{A:"(A) Found",B:"(B) grown",C:"(C) multinational",D:"(D) thousands"}},
+    {q:"Identify the error:\n\nThe fiduciary (A) duty of the board requires (B) that every member (C) acts (D) in the best interest of the shareholders.",a:{A:"(A) fiduciary",B:"(B) requires",C:"(C) member",D:"(D) acts"}},
+    {q:"Identify the error:\n\nCryptocurrencies (A) have gained (B) widespread accepted (C) as a legitimate asset class among (D) institutional investors.",a:{A:"(A) Cryptocurrencies",B:"(B) gained",C:"(C) accepted",D:"(D) among"}},
+    {q:"Identify the error:\n\nBecause (A) the inflation rate had (B) risen sharp (C), the central bank decided to tighten (D) monetary policy.",a:{A:"(A) Because",B:"(B) had",C:"(C) sharp",D:"(D) tighten"}},
+    {q:"Identify the error:\n\nThe manager (A) together with his (B) senior advisors are (C) attending the annual (D) economic summit.",a:{A:"(A) manager",B:"(B) together with",C:"(C) are",D:"(D) annual"}},
+    {q:"Identify the error:\n\nThe proposed (A) merger between the two airlines it was (B) postponed due to (C) unresolved antitrust (D) concerns.",a:{A:"(A) proposed",B:"(B) it was",C:"(C) due to",D:"(D) antitrust"}},
+    {q:"Identify the error:\n\nMuch (A) economists argue that (B) a universal basic income would (C) reduce poverty and stimulate (D) local economies.",a:{A:"(A) Much",B:"(B) that",C:"(C) would",D:"(D) stimulate"}},
+    {q:"Identify the error:\n\nThe company is (A) looking for an individual (B) whom (C) possesses strong (D) leadership skills and financial acumen.",a:{A:"(A) is",B:"(B) individual",C:"(C) whom",D:"(D) strong"}},
+    {q:"Identify the error:\n\nIn (A) response to the energy crisis, most of (B) European nations have (C) increased their investments (D) in renewable energy.",a:{A:"(A) In",B:"(B) most of",C:"(C) have",D:"(D) investments"}},
+    {q:"Identify the error:\n\nAlthough (A) the stock market is often unpredictable (B), but long-term investors generally (C) see positive (D) returns.",a:{A:"(A) Although",B:"(B) unpredictable",C:"(C) generally",D:"(D) positive"}},
+    {q:"Identify the error:\n\nThe efficiency (A) of the new manufacturing plant is (B) significantly higher (C) than the old one (D).",a:{A:"(A) efficiency",B:"(B) is",C:"(C) higher",D:"(D) than the old one"}},
+    {q:"Identify the error:\n\nMany startup (A) founders fail because of (B) they lack (C) a clear understanding (D) of their target market.",a:{A:"(A) startup",B:"(B) because of",C:"(C) lack",D:"(D) understanding"}},
+    {q:"Identify the error:\n\nThe results (A) of the market research indicates (B) that consumers prefer (C) eco-friendly packaging over (D) plastic.",a:{A:"(A) results",B:"(B) indicates",C:"(C) prefer",D:"(D) over"}},
+    {q:"Identify the error:\n\nInformation (A) regarding the new tax regulations were (B) distributed to (C) all employees last (D) week.",a:{A:"(A) Information",B:"(B) were",C:"(C) to",D:"(D) last"}},
+    {q:"Identify the error:\n\nNeither (A) the CEO nor (B) the CFO were (C) aware of the discrepancy (D) in the financial statements.",a:{A:"(A) Neither",B:"(B) nor",C:"(C) were",D:"(D) discrepancy"}},
+    {q:"Identify the error:\n\nThe newly (A) developed software performs (B) more better (C) than the previous (D) version.",a:{A:"(A) newly",B:"(B) performs",C:"(C) more better",D:"(D) previous"}},
+    {q:"Identify the error:\n\nAfter conducted (A) a series of audits (B), the firm concluded (C) that the internal controls were (D) inadequate.",a:{A:"(A) conducted",B:"(B) audits",C:"(C) concluded",D:"(D) were"}},
+    {q:"Identify the error:\n\nThe distribution (A) of wealth in the country is (B) most (C) unequal than it was a decade (D) ago.",a:{A:"(A) distribution",B:"(B) is",C:"(C) most",D:"(D) decade"}},
+    {q:"Identify the error:\n\nProviding (A) the necessary founding (B) is secured, the project will (C) commence next (D) month.",a:{A:"(A) Providing",B:"(B) founding",C:"(C) will",D:"(D) next"}},
+    {q:"Identify the error:\n\nThe scientific (A) community is (B) divided on whether (C) the new policy effect (D) the climate positively.",a:{A:"(A) scientific",B:"(B) is",C:"(C) whether",D:"(D) effect"}},
+    {q:"Identify the error:\n\nIn economies (A) where inflation is high, consumers (B) tend to spending (C) their money quickly (D).",a:{A:"(A) economies",B:"(B) consumers",C:"(C) spending",D:"(D) quickly"}}
+];
+
+// READING (1-50)
+const PASSAGES = {
+    p1: { title: "Passage 1: Dark Flow", text: `The standard cosmological model, predicated upon the Friedmann-Lemaître-Robertson-Walker metric, posits that the universe is isotropic and homogeneous on a sufficiently large scale. This "Cosmological Principle" suggests that the expansion of space occurs uniformly in all directions. However, recent controversial observations of "dark flow"—a coherent, non-random motion of galaxy clusters toward a specific region of the celestial sphere—have threatened to upend this long-held equilibrium.\n\nDetailed kinematic analyses of the Sunyaev-Zel'dovich effect in X-ray emitting clusters suggest that these clusters are migrating at velocities nearing 1,000 kilometers per second toward a patch of sky between the constellations of Centaurus and Vela. Proponents of the dark flow hypothesis argue that this motion is not a localized aberration but rather a vestigial influence from the pre-inflationary era.\n\nThey suggest that before the exponential expansion of inflation, the observable universe was part of a much larger structure, and the gravitational pull of matter residing far beyond the "cosmic horizon" continues to exert a measurable effect on our local neighborhood. Critics, however, remain skeptical, attributing the findings to statistical fluctuations or systematic errors in the processing of Cosmic Microwave Background (CMB) data. If dark flow is verified, it would imply that the universe is fundamentally "tilted," requiring a radical recalibration of our understanding of cosmic topology and the very laws of physics that govern large-scale structures.` },
+    p2: { title: "Passage 2: Srivijaya Empire", text: `The hegemony of Srivijaya, a maritime empire centered on the island of Sumatra from the 7th to the 11th centuries, was not merely a product of military conquest, but rather a sophisticated synthesis of hydrographic advantage and religious patronage. Unlike terrestrial empires that relied on agrarian surpluses, Srivijaya's power was predicated on its ability to command the Straits of Malacca and the Sunda Strait—the primary conduits for the lucrative maritime silk road between Tang China and the Abbasid Caliphate.\n\nBy establishing a network of "entrepôts," Srivijaya functioned as a mandatory intermediary, extracting tolls and providing a secure harbor for seasonal monsoon-dependent trade. However, the cohesion of this thallassocracy (sea-based empire) was perpetually fragile. Srivijaya did not practice centralized administrative control in the modern sense. Instead, it operated as a "mandala" system—a fluid configuration of power where peripheral polities pledged loyalty to the center (kedatuan) in exchange for trade privileges and spiritual legitimacy.\n\nTo reinforce this bond, the Srivijayan rulers positioned themselves as champions of Vajrayana Buddhism, sponsoring magnificent monastic complexes and attracting scholars from across Asia. This religious soft power served as a "symbolic glue," yet it could not fully insulate the empire against external shocks. The devastating raid by the Chola Dynasty of India in 1025 CE, while not a permanent occupation, fractured the empire's prestige, ultimately leading to a protracted decline as vassal states began to gravitate toward emerging regional competitors.` },
+    p3: { title: "Passage 3: Enzymatic Catalysis", text: `The fundamental paradox of biological chemistry lies in the requirement for rapid metabolic reactions within the relatively temperate and dilute environment of the living cell. Spontaneous chemical reactions often require a thermal energy input that would be deleterious to cellular integrity. To circumvent this, biological systems employ enzymes—highly specialized protein catalysts that accelerate reaction rates by several orders of magnitude without being consumed in the process.\n\nThe efficacy of an enzyme is rooted in its ability to lower the activation energy (ΔG‡) of a reaction, facilitating the transformation of substrates into products via a transient, high-energy configuration known as the transition state. According to the transition state theory, the catalyst does not alter the overall thermodynamic equilibrium (ΔG) of the reaction; rather, it stabilizes the transition state through a multitude of non-covalent interactions, such as hydrogen bonding and electrostatic forces.\n\nThis stabilization occurs within the enzyme's active site, a sequestered microenvironment that is often hydrophobic in nature. The "induced fit" model further refines this understanding, suggesting that the active site is not a rigid template but a flexible architecture that undergoes conformational changes upon substrate binding. This reciprocal adjustment ensures that the enzyme-substrate complex is perfectly aligned to surmount the energetic barrier, thereby ensuring the kinetic feasibility of life's essential biochemical pathways.` },
+    p4: { title: "Passage 4: Trophic Cascades", text: `The equilibrium of an ecosystem is often maintained by a "trophic cascade," a process where the influence of top predators propagates downward through the food web, regulating the population of herbivores and, by extension, the health of primary producers. However, anthropogenic interventions—ranging from habitat fragmentation to the systematic extirpation of apex predators—have precipitated a phenomenon known as "trophic downgrading."\n\nWhen a keystone predator is removed from an environment, the resulting release of herbivore populations often leads to overgrazing, which can fundamentally alter the landscape's carbon sequestration capacity and biodiversity. A poignant example of this occurs in the salt marshes of the North American Atlantic coast. The depletion of predatory crabs, often due to overfishing or coastal development, has led to a population explosion of the herbivorous marsh snail (Littoraria irrorata).\n\nIn the absence of predatory pressure, these snails graze uncontrollably on Spartina alterniflora, the primary marsh grass. The loss of this vegetation not only destabilizes the sediment, leading to severe coastal erosion, but also eliminates a critical nursery for various marine species. This case underscores that the impact of human activity is rarely confined to a single species; rather, it triggers a deleterious ripple effect that can dismantle the structural integrity of an entire biome.` },
+    p5: { title: "Passage 5: Neolithic Revolution", text: `For decades, the Neolithic Revolution was portrayed as a triumphant leap in human progress—a definitive transition from the precarious, hand-to-mouth existence of hunter-gatherers to the stability of sedentary agriculture. However, recent bio-archaeological evidence from the Fertile Crescent has challenged this Whiggish interpretation, revealing a "sedentism paradox."\n\nWhile the shift to agriculture facilitated a demographic explosion, it also precipitated a marked decline in individual health. Skeletal remains from early agricultural sites such as Çatalhöyük exhibit clear indicators of nutritional stress, including porotic hyperostosis and linear enamel hypoplasia—pathologies that were conspicuously absent in their nomadic predecessors.\n\nThis physiological decline was exacerbated by the emergence of social stratification. Unlike the egalitarian structures of Paleolithic bands, where resources were distributed with relative parity, sedentary life necessitated the management of surplus grain. This prompted the rise of a nascent priestly and administrative class that exerted control over the means of production. Anthropologists argue that the "monumental architecture" of the period—massive stone enclosures and granaries—served not just as functional utilities but as ideological manifestations of power. The transition was thus not merely a technological shift in subsistence, but a profound psychological and sociopolitical reconfiguration that forever altered the human trajectory, tethering the species to the land and to the hierarchies that emerged from it.` }
+};
+
+const Q_READING = [
+    {p:1,q:"What is the primary objective of the passage?",a:{A:"To validate the Friedmann-Lemaître-Robertson-Walker metric",B:"To examine a phenomenon that potentially contradicts a foundational principle",C:"To explain how the Sunyaev-Zel'dovich effect measures velocity",D:"To argue that the cosmic horizon is smaller than estimated"}},
+    {p:1,q:"The word 'posits' in line 1 is closest in meaning to...",a:{A:"Assumes",B:"Questions",C:"Disproves",D:"Disregards"}},
+    {p:1,q:"According to the Cosmological Principle, how should the universe behave?",a:{A:"It should expand more rapidly in regions with higher density",B:"It should exhibit a 'tilted' topology",C:"It should appear identical in every direction from a large scale",D:"It should be governed by gravitational forces from beyond"}},
+    {p:1,q:"Which of the following can be inferred about 'dark flow'?",a:{A:"It is a localized movement caused by black holes",B:"Its existence is universally accepted",C:"It represents a movement that does not align with uniform expansion",D:"It was first predicted by the standard model"}},
+    {p:1,q:"The author mentions 'the Sunyaev-Zel'dovich effect' primarily to...",a:{A:"Illustrate the methodology used to detect cluster movement",B:"Prove that X-ray emissions are the source of energy",C:"Highlight a systematic error in CMB data",D:"Contrast it with kinematic analysis"}},
+    {p:1,q:"The word 'vestigial' in line 8 is closest in meaning to...",a:{A:"Dominant",B:"Remaining",C:"Theoretical",D:"Future"}},
+    {p:1,q:"Proponents of dark flow suggest the cause lies...",a:{A:"Within the observable universe",B:"In a region physically unreachable and unobservable",C:"In the constellations of Centaurus and Vela",D:"In a flaw in X-ray emission models"}},
+    {p:1,q:"Which of the following best describes the 'cosmic horizon'?",a:{A:"The physical edge of the entire universe",B:"The point beyond which no matter exists",C:"The limit of what can be observed due to the speed of light",D:"A region where laws of physics cease"}},
+    {p:1,q:"The author's attitude toward the dark flow hypothesis is...",a:{A:"Strongly dismissive",B:"Enthusiastically supportive",C:"Critically objective",D:"Uninterested"}},
+    {p:1,q:"What implies verification of dark flow?",a:{A:"Confirmation of the Cosmological Principle",B:"Proof that inflation never occurred",C:"A need for revision of current cosmological theories",D:"Random movement of galaxy clusters"}},
+    {p:2,q:"What is the main idea of the passage?",a:{A:"Military strategies of Srivijaya",B:"Role of agrarian surplus",C:"The multi-faceted nature of Srivijaya's power and instability",D:"Influence of the Abbasid Caliphate"}},
+    {p:2,q:"The word 'conduits' in line 4 is closest in meaning to...",a:{A:"Obstacles",B:"Channels",C:"Markets",D:"Borders"}},
+    {p:2,q:"Srivijaya's economic power was derived from...",a:{A:"Controlling key maritime checkpoints",B:"Exporting rice",C:"Collecting inland taxes",D:"Alliance with Tang Dynasty"}},
+    {p:2,q:"'Entrepôts' refers to...",a:{A:"Military forts",B:"Religious temples",C:"Commercial trading centers",D:"Royal palaces"}},
+    {p:2,q:"A 'mandala' system is characterized by...",a:{A:"Strict centralized laws",B:"Rigid hierarchy",C:"Flexible political structure based on mutual benefit",D:"Isolation of peripheral states"}},
+    {p:2,q:"Why did rulers sponsor Vajrayana Buddhism?",a:{A:"To convert the Abbasid Caliphate",B:"To strengthen authority through religious influence",C:"To discourage foreign traders",D:"To prepare for invasion"}},
+    {p:2,q:"The word 'shocks' in line 12 is closest in meaning to...",a:{A:"Electricity",B:"Surprises",C:"Disruptions",D:"Discoveries"}},
+    {p:2,q:"Significance of the Chola raid in 1025 CE?",a:{A:"Destruction of Sumatra",B:"Beginning of absolute rule",C:"Damaged reputation and weakened control",D:"Switch to Hinduism"}},
+    {p:2,q:"The word 'protracted' in line 14 is closest in meaning to...",a:{A:"Sudden",B:"Prolonged",C:"Brief",D:"Hidden"}},
+    {p:2,q:"Which is NOT a factor in Srivijaya's decline?",a:{A:"Loss of prestige",B:"Regional competition",C:"Defection of vassals",D:"Massive drought"}},
+    {p:3,q:"Main point regarding enzymes?",a:{A:"Increase thermal energy",B:"Change final equilibrium",C:"Enable vital reactions by reducing activation energy",D:"Consumed during metabolic cycle"}},
+    {p:3,q:"'Deleterious' is closest in meaning to...",a:{A:"Beneficial",B:"Harmful",C:"Negligible",D:"Necessary"}},
+    {p:3,q:"'Circumvent' is closest in meaning to...",a:{A:"Bypass",B:"Encourage",C:"Monitor",D:"Duplicate"}},
+    {p:3,q:"The 'transition state' is...",a:{A:"Final stable form",B:"Permanent structure",C:"Short-lived high-energy stage",D:"Non-covalent interaction"}},
+    {p:3,q:"Relationship between enzymes and equilibrium?",a:{A:"Push to higher energy",B:"No impact on balance",C:"Provide energy to change ΔG",D:"Prevent equilibrium"}},
+    {p:3,q:"'Sequestered' is closest in meaning to...",a:{A:"Exposed",B:"Isolated",C:"Crowded",D:"Liquid"}},
+    {p:3,q:"'Induced fit' model implies...",a:{A:"Static lock and key",B:"Fixed enzyme shape",C:"Dynamic interaction",D:"Substrate changes identity"}},
+    {p:3,q:"Mention of 'hydrogen bonding' illustrates...",a:{A:"Synthetic catalysts",B:"Mechanisms to stabilize transition state",C:"Hydrophobic nature",D:"Primary structure"}},
+    {p:3,q:"'Surmount' is closest in meaning to...",a:{A:"Yield to",B:"Overcome",C:"Increase",D:"Observe"}},
+    {p:3,q:"Which is NOT true about the active site?",a:{A:"Specific microenvironment",B:"Changes shape",C:"Found on exterior exposed to water",D:"Uses non-covalent forces"}},
+    {p:4,q:"Primary focus of passage?",a:{A:"Diet of marsh snail",B:"Coastal economy",C:"Human disruption of food webs",D:"Evolution of producers"}},
+    {p:4,q:"'Propagates' is closest in meaning to...",a:{A:"Stops",B:"Spreads",C:"Shrinks",D:"Fails"}},
+    {p:4,q:"'Extirpation' means...",a:{A:"Protection",B:"Cultivation",C:"Local extinction",D:"Migration"}},
+    {p:4,q:"What happens during 'trophic downgrading'?",a:{A:"Predators increase",B:"Web stabilizes",C:"Loss of predators causes negative chain reaction",D:"Producers become dominant"}},
+    {p:4,q:"A 'keystone predator' is...",a:{A:"Species with disproportionate effect",B:"Most numerous animal",C:"Eats one herbivore",D:"Immune to interference"}},
+    {p:4,q:"Consequence of snail explosion?",a:{A:"Increase in crabs",B:"Growth of grass",C:"Consumption of marsh grass",D:"Reduced erosion"}},
+    {p:4,q:"'Poignant' means...",a:{A:"Boring",B:"Distant",C:"Impactful",D:"Scientific"}},
+    {p:4,q:"Mention of 'carbon sequestration' highlights...",a:{A:"Economic value",B:"Environmental benefit threatened",C:"Digestion process",D:"Breathing underwater"}},
+    {p:4,q:"'Destabilizes' means...",a:{A:"Weakens",B:"Hardens",C:"Expands",D:"Cleans"}},
+    {p:4,q:"Author's tone?",a:{A:"Indifferent",B:"Concerned/Analytical",C:"Political",D:"Celebratory"}},
+    {p:5,q:"Passage primarily concerned with?",a:{A:"Technological inventions",B:"Re-evaluation of agricultural shift consequences",C:"Religious differences",D:"Farming tools"}},
+    {p:5,q:"'Precarious' means...",a:{A:"Stable",B:"Uncertain",C:"Ancient",D:"Abundant"}},
+    {p:5,q:"'Whiggish interpretation' suggests...",a:{A:"Focus on biology",B:"Bias toward continuous progress",C:"Skepticism",D:"Egalitarian values"}},
+    {p:5,q:"'Precipitated' means...",a:{A:"Prevented",B:"Delayed",C:"Triggered",D:"Explained"}},
+    {p:5,q:"Inference about 'porotic hyperostosis'?",a:{A:"Common in nomads",B:"Marker of poor health",C:"Genetic trait",D:"Result of architecture"}},
+    {p:5,q:"'Conspicuously' means...",a:{A:"Secretly",B:"Noticeably",C:"Accidentally",D:"Gradually"}},
+    {p:5,q:"Difference between Paleolithic and Neolithic?",a:{A:"Paleo was more complex",B:"Neo was equal",C:"Paleo was more egalitarian",D:"Neo rejected leadership"}},
+    {p:5,q:"Storage of surplus grain led to...",a:{A:"Population decrease",B:"Specialized social classes",C:"Nomadic lifestyle",D:"No stress"}},
+    {p:5,q:"'Nascent' means...",a:{A:"Dying",B:"Emerging",C:"Corrupt",D:"Ancient"}},
+    {p:5,q:"'Monumental architecture' illustrates...",a:{A:"Engineering skills",B:"Ideological power/hierarchy",C:"Protection",D:"Health decline"}}
+];
+
+// KEYS & SCORING (Aligned with content)
+const DB_KEYS = {
+    // Listening Keys (Based on previous prompts: 1-30 script keys, 31-38 logic, 39-50 lectures)
+    s1: [
+        'A','B','C','D','A','B','C','D','A','B', // 1-10
+        'C','B','D','A','B','C','A','B','C','D', // 11-20
+        'A','B','C','A','B','C','D','A','B','C', // 21-30
+        'B','A','C','D','B','A','C','D',         // 31-38
+        'B','C','A','D','B','A','C','D','B','A','C','B' // 39-50
+],
+    // Structure Keys (1-15 Standard, 16-40 Error Recog)
+    s2: [
+        'A','B','C','B','A','B','C','A','B','C','C','C','B','B','A', // 1-15
+        'D','D','A','B','A','D','C','C','C','B','A','C','B','A','D','B','B','B','C','C','A','C','B','D','C' // 16-40
+    ],
+    // Reading Keys (1-50 Standard)
+    s3: ['B','A','C','C','A','B','B','C','C','C','C','B','A','C','C','B','C','C','B','D','C','B','A','C','B','B','C','B','B','C','C','B','C','C','A','C','C','B','A','B','B','B','B','C','B','B','C','B','B','B']
+};
+
+const DB_CONV = {
+    s1: [31,31,31,32,32,32,33,33,34,34,35,35,36,36,37,37,38,38,39,39,40,40,41,41,42,42,43,43,44,44,45,45,46,46,47,47,48,48,49,49,50,50,51,52,53,54,56,58,60,63,68],
+    s2: [31,31,31,32,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,65,66,67,68,68,68],
+    s3: [31,31,32,32,33,33,34,35,36,37,38,39,40,41,42,43,44,45,46,46,47,48,48,49,50,51,52,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,67,67,67,67,67,67,67,67]
+};
+
+// ================= APP LOGIC =================
+
+const state = {
+    sec: 1,
+    qNum: 0,
+    ans: {},
+    times: [35*60, 25*60, 55*60],
+    curTime: 35*60,
+    timer: null,
+    locked: [false, false, false]
+};
+
+// --- NEW TOKEN FUNCTION ---
+function verifyToken() {
+    const input = document.getElementById('tokenInput').value.trim().toUpperCase();
+    const errorMsg = document.getElementById('tokenError');
+    const tokenSection = document.getElementById('tokenSection');
+    
+    if (input === ACCESS_TOKEN) {
+        tokenSection.style.display = 'none';
+        document.getElementById('startBtnContainer').classList.remove('hidden');
+    } else {
+        errorMsg.classList.remove('hidden');
+        tokenSection.classList.remove('shake');
+        void tokenSection.offsetWidth; // trigger reflow
+        tokenSection.classList.add('shake');
+    }
+}
+
+function startTest() {
+    // KICKSTART AUDIO UNTUK MOBILE
+    const audioPlayer = document.getElementById('mainAudio');
+    audioPlayer.load(); // Memaksa browser HP untuk menyiapkan file audio
+    
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('testScreen').classList.remove('hidden');
+    document.getElementById('testScreen').classList.add('flex');
+    showSection(1);
+}
+function showSection(s) {
+    if (state.locked[state.sec-1] && s < state.sec) {
+        alert("Previous section is locked.");
+        return;
+    }
+    
+    state.sec = s;
+    state.qNum = 0;
+    state.curTime = state.times[s-1];
+    
+    // --- AUDIO VISIBILITY LOGIC ---
+    const audioContainer = document.getElementById('audioPlayerContainer');
+    const audioPlayer = document.getElementById('mainAudio');
+    
+    if (s === 1) {
+        audioContainer.classList.remove('hidden');
+    } else {
+        audioContainer.classList.add('hidden');
+        audioPlayer.pause(); // Stop audio if moving to Structure/Reading
+    }
+    // ------------------------------
+
+    // Update Tabs
+    [1,2,3].forEach(i => {
+        const btn = document.getElementById(`navSec${i}`);
+        if(i === s) {
+            btn.className = "px-4 py-2 rounded-lg text-sm font-bold text-blue-600 bg-blue-50 border border-blue-200 shadow-sm";
+        } else {
+            btn.className = "px-4 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 cursor-default";
+        }
+    });
+
+    // Start Timer
+    clearInterval(state.timer);
+    startTimer();
+    renderQ();
+    renderTracker();
+}
+
+function renderQ() {
+    const qData = state.sec === 1 ? Q_LISTENING[state.qNum] : 
+                  state.sec === 2 ? Q_STRUCTURE[state.qNum] : 
+                  Q_READING[state.qNum];
+    
+    const max = state.sec === 2 ? 40 : 50;
+    const key = `s${state.sec}_${state.qNum}`;
+    
+    let html = `
+        <div class="mb-6">
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wide">Question ${state.qNum + 1} of ${max}</span>
+            <div class="h-1 w-full bg-slate-100 rounded-full mt-2">
+                <div class="h-1 bg-blue-600 rounded-full transition-all duration-300" style="width: ${((state.qNum+1)/max)*100}%"></div>
+            </div>
+        </div>
+    `;
+
+    // Passage (Reading)
+    if (state.sec === 3 && qData.p) {
+        const passage = PASSAGES['p' + qData.p];
+        html += `
+        <div class="mb-6 passage-box shadow-inner">
+            <h4 class="font-bold text-blue-900 mb-2 sticky top-0 bg-slate-50 pb-2 border-b border-slate-200">${passage.title}</h4>
+            <div class="text-justify">${passage.text.replace(/\n\n/g, '<br><br>')}</div>
+        </div>`;
+    }
+
+    // Question Text
+    html += `<h3 class="text-lg font-bold text-slate-800 mb-6 leading-relaxed whitespace-pre-wrap">${qData.q}</h3>`;
+
+    // Options
+    html += `<div class="space-y-3">`;
+    ['A','B','C','D'].forEach(opt => {
+        const isSel = state.ans[key] === opt;
+        html += `
+        <label class="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${isSel ? 'bg-blue-50 border-blue-500' : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50'}">
+            <input type="radio" name="opt" class="hidden" ${isSel ? 'checked' : ''} onclick="answer('${key}', '${opt}')">
+            <div class="radio-circle w-6 h-6 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors"></div>
+            <div class="text-slate-700 font-medium">
+                <span class="font-bold text-slate-900 mr-2">(${opt})</span> ${qData.a[opt]}
+            </div>
+        </label>`;
+    });
+    html += `</div>`;
+
+    document.getElementById('questionContainer').innerHTML = html;
+    
+    // Update Next Button
+    const btn = document.getElementById('nextBtn');
+    if (state.sec === 3 && state.qNum === 49) {
+        btn.textContent = "Finish Test";
+        btn.className = "px-6 py-3 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl font-semibold transition shadow-md";
+    } else if (state.qNum === max - 1) {
+        btn.textContent = "Finish Section";
+        btn.className = "px-6 py-3 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-semibold transition shadow-md";
+    } else {
+        btn.textContent = "Next";
+        btn.className = "px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-semibold transition shadow-md";
+    }
+
+    renderTracker();
+}
+
+function renderTracker() {
+    const max = state.sec === 2 ? 40 : 50;
+    const grid = document.getElementById('trackerGrid');
+    let html = '';
+    let answered = 0;
+
+    for(let i=0; i<max; i++) {
+        const key = `s${state.sec}_${i}`;
+        const isAns = state.ans[key];
+        const isCurr = state.qNum === i;
+        if(isAns) answered++;
+
+        let cls = "h-9 w-full rounded text-xs font-medium transition-all duration-200 ";
+        if(isCurr) cls += "btn-current";
+        else if(isAns) cls += "btn-answered";
+        else cls += "btn-unanswered";
+
+        html += `<button onclick="jump(${i})" class="${cls}">${i+1}</button>`;
+    }
+    grid.innerHTML = html;
+    document.getElementById('progressText').textContent = `${answered}/${max}`;
+
+    // Show Sidebar Submit only on Section 3
+    const sbBtn = document.getElementById('submitBtnSidebar');
+    if(state.sec === 3) sbBtn.classList.remove('hidden');
+    else sbBtn.classList.add('hidden');
+}
+
+function answer(key, opt) {
+    state.ans[key] = opt;
+    renderTracker();
+    // Slight delay visual feedback
+    setTimeout(() => {
+        const radios = document.querySelectorAll('input[type="radio"]');
+        radios.forEach(r => {
+            if(r.checked) r.parentElement.classList.add('bg-blue-50', 'border-blue-500');
+            else r.parentElement.classList.remove('bg-blue-50', 'border-blue-500');
+        });
+    }, 50);
+}
+
+function jump(i) {
+    state.qNum = i;
+    renderQ();
+}
+
+function nextQ() {
+    const max = state.sec === 2 ? 40 : 50;
+    if (state.qNum < max - 1) {
+        state.qNum++;
+        renderQ();
+    } else {
+        if (state.sec < 3) {
+            if(confirm(`Finish Section ${state.sec}? You cannot return.`)) {
+                state.locked[state.sec-1] = true;
+                showSection(state.sec+1);
+            }
+        } else {
+            submitTest();
+        }
+    }
+}
+
+function prevQ() {
+    if(state.qNum > 0) {
+        state.qNum--;
+        renderQ();
+    }
+}
+
+function startTimer() {
+    state.timer = setInterval(() => {
+        state.curTime--;
+        const m = Math.floor(state.curTime / 60);
+        const s = state.curTime % 60;
+        document.getElementById('sectionTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        
+        // Simple Total Time Decrease (approx)
+        const totalSecs = parseInt(document.getElementById('totalTimeDisplay').textContent.split(':')[0])*60; 
+        
+        if(state.curTime <= 0) {
+            clearInterval(state.timer);
+            alert("Time's up!");
+            if(state.sec < 3) showSection(state.sec+1);
+            else submitTest();
+        }
+    }, 1000);
+}
+
+function submitTest() {
+    if(!confirm("Submit and finish test?")) return;
+    clearInterval(state.timer);
+
+    // Scoring
+    let c1=0, c2=0, c3=0;
+    
+    // Listening
+    for(let i=0; i<50; i++) {
+        if(state.ans[`s1_${i}`] === DB_KEYS.s1[i]) c1++;
+    }
+    // Structure
+    for(let i=0; i<40; i++) {
+        if(state.ans[`s2_${i}`] === DB_KEYS.s2[i]) c2++;
+    }
+    // Reading
+    for(let i=0; i<50; i++) {
+        if(state.ans[`s3_${i}`] === DB_KEYS.s3[i]) c3++;
+    }
+
+    const s1 = DB_CONV.s1[c1] || 31;
+    const s2 = DB_CONV.s2[c2] || 31;
+    const s3 = DB_CONV.s3[c3] || 31;
+    const final = Math.round((s1+s2+s3)*10/3);
+
+    document.getElementById('testScreen').classList.add('hidden');
+    document.getElementById('resultsScreen').classList.remove('hidden');
+
+    // Animate Score
+    let currentScore = 310;
+    const scoreInterval = setInterval(() => {
+        currentScore += 5;
+        if(currentScore >= final) {
+            currentScore = final;
+            clearInterval(scoreInterval);
+        }
+        document.getElementById('finalScore').textContent = currentScore;
+    }, 20);
+
+    document.getElementById('scoreSec1').textContent = s1;
+    document.getElementById('scoreSec2').textContent = s2;
+    document.getElementById('scoreSec3').textContent = s3;
+
+    document.getElementById('correctSec1').textContent = `${c1}/50 Correct`;
+    document.getElementById('correctSec2').textContent = `${c2}/40 Correct`;
+    document.getElementById('correctSec3').textContent = `${c3}/50 Correct`;
+}
+</script>
+</body>
+</html>
