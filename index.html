@@ -140,21 +140,21 @@
                     </div>
                 </div>
 
-                <div id="audioPlayerContainer" class="hidden mb-6 bg-blue-600 p-4 rounded-xl border border-blue-700 shadow-md text-white">
+                 <div id="audioPlayerContainer" class="hidden mb-6 bg-blue-600 p-4 rounded-xl border border-blue-700 shadow-md text-white">
                     <div class="flex items-center gap-4">
                         <div class="bg-white/20 p-2 rounded-lg">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
                         </div>
                         <div class="w-full">
                             <p class="text-xs text-blue-100 font-semibold uppercase tracking-wider mb-1">Listening Section Audio</p>
-                         <audio id="mainAudio" controls class="w-full h-8 block rounded outline-none" style="filter: invert(1);" preload="auto">
-    <source src="audio.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-                         </div>
+                            <audio id="mainAudio" controls class="w-full h-8 block rounded outline-none" style="filter: invert(1);" preload="auto">
+                                <source src="audio.mp3" type="audio/mpeg">
+                                Browser kamu tidak mendukung fitur audio.
+                            </audio>
+                        </div>
                     </div>
                 </div>
-                <div id="questionContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 min-h-[400px]">
+               <div id="questionContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 min-h-[400px]">
                     </div>
 
                 <div class="mt-6 flex justify-between gap-4">
@@ -460,18 +460,30 @@ function verifyToken() {
 }
 
 function startTest() {
-    // KICKSTART AUDIO UNTUK MOBILE
     const audioPlayer = document.getElementById('mainAudio');
-    audioPlayer.load(); // Memaksa browser HP untuk menyiapkan file audio
+    const audioContainer = document.getElementById('audioPlayerContainer');
     
+    // 1. Kickstart audio (WAJIB BUAT HP)
+    if (audioPlayer) {
+        audioPlayer.load();
+    }
+    
+    // 2. Tampilkan Layar Utama
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('testScreen').classList.remove('hidden');
     document.getElementById('testScreen').classList.add('flex');
+    
+    // 3. Langsung paksa munculkan container audio jika di Section 1
+    if (audioContainer) {
+        audioContainer.classList.remove('hidden');
+    }
+    
     showSection(1);
 }
+
 function showSection(s) {
     if (state.locked[state.sec-1] && s < state.sec) {
-        alert("Previous section is locked.");
+        alert("Section sebelumnya sudah terkunci.");
         return;
     }
     
@@ -479,19 +491,21 @@ function showSection(s) {
     state.qNum = 0;
     state.curTime = state.times[s-1];
     
-    // --- AUDIO VISIBILITY LOGIC ---
     const audioContainer = document.getElementById('audioPlayerContainer');
     const audioPlayer = document.getElementById('mainAudio');
     
+    // Kontrol Muncul/Sembunyi Audio Player
     if (s === 1) {
-        audioContainer.classList.remove('hidden');
+        if (audioContainer) audioContainer.classList.remove('hidden');
     } else {
-        audioContainer.classList.add('hidden');
-        audioPlayer.pause(); // Stop audio if moving to Structure/Reading
+        if (audioContainer) audioContainer.classList.add('hidden');
+        if (audioPlayer) {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+        }
     }
-    // ------------------------------
 
-    // Update Tabs
+    // Update Tampilan Tab Navigasi
     [1,2,3].forEach(i => {
         const btn = document.getElementById(`navSec${i}`);
         if(i === s) {
@@ -501,7 +515,6 @@ function showSection(s) {
         }
     });
 
-    // Start Timer
     clearInterval(state.timer);
     startTimer();
     renderQ();
