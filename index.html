@@ -62,20 +62,22 @@
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-/* Answer Key Modal Styles */
+
+        /* Answer Key Modal Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15, 23, 42, 0.9);
             z-index: 100;
-            display: flex; justify-content: center; items-align: start;
+            display: flex; justify-content: center; align-items: flex-start; /* Fixed typo items-align */
             padding: 2rem;
             overflow-y: auto;
             backdrop-filter: blur(4px);
         }
         .modal-content {
-            background: white; width: 100%; max-width: 4xl;
+            background: white; width: 100%; max-width: 56rem; /* 4xl equivalent */
             border-radius: 1.5rem; padding: 2rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            margin-top: 2.5rem; margin-bottom: 2.5rem;
         }
         .key-card {
             border: 1px solid #e2e8f0; border-radius: 0.75rem;
@@ -108,7 +110,7 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 w-full flex-grow">
+    <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 w-full flex-grow relative">
         
         <div id="startScreen" class="max-w-2xl mx-auto mt-12 bg-white rounded-2xl shadow-xl border border-slate-200 p-8 md:p-12 text-center">
             <h2 class="text-3xl font-extrabold text-slate-900 mb-4">TOEFL ITP Practice Test</h2>
@@ -174,9 +176,9 @@
                         <div class="w-full">
                             <p class="text-xs text-blue-100 font-semibold uppercase tracking-wider mb-1">Listening Section Audio</p>
                            <audio id="mainAudio" controls class="w-full h-14 block rounded outline-none" style="filter: invert(1);" preload="auto">
-    <source src="part-a_Q2aIQMoh (1).mp3" type="audio/mpeg">
-    Browser kamu tidak mendukung fitur audio.
-</audio>
+                                <source src="part-a_Q2aIQMoh (1).mp3" type="audio/mpeg">
+                                Browser kamu tidak mendukung fitur audio.
+                            </audio>
                         </div>
                     </div>
                 </div>
@@ -248,48 +250,49 @@
                     </div>
                 </div>
 
-              <div class="p-8 bg-slate-50 border-t border-slate-100 flex justify-center gap-4">
+                <div class="p-8 bg-slate-50 border-t border-slate-100 flex justify-center gap-4">
                     <button onclick="location.reload()" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg">Retake Test</button>
                     <button onclick="showAnswerKey()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">View Answer Key</button>
                 </div>
-            </div> </div> <div id="answerKeyModal" class="hidden modal-overlay">
-            <div class="modal-content max-w-4xl mx-auto mt-10 mb-10">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Answer Keys & Explanations</h2>
-                        <p class="text-slate-500 text-sm">Review your mistakes and understand the logic.</p>
-                    </div>
-                    <button onclick="closeAnswerKey()" class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                
-                <div class="flex gap-2 mb-6 border-b border-slate-200 pb-1">
-                    <button onclick="renderKeySection(1)" id="keyTab1" class="px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">Listening</button>
-                    <button onclick="renderKeySection(2)" id="keyTab2" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Structure</button>
-                    <button onclick="renderKeySection(3)" id="keyTab3" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Reading</button>
-                </div>
-
-                <div id="keyContent" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                    </div>
-
-                <div class="mt-6 text-right">
-                    <button onclick="closeAnswerKey()" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-bold hover:bg-slate-300 transition">Close</button>
-                </div>
             </div>
-        </div>            
+        </div>
+
     </main>
 
-<script>
+    <div id="answerKeyModal" class="hidden modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Answer Keys & Explanations</h2>
+                    <p class="text-slate-500 text-sm">Review your mistakes and understand the logic.</p>
+                </div>
+                <button onclick="closeAnswerKey()" class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="flex gap-2 mb-6 border-b border-slate-200 pb-1">
+                <button onclick="renderKeySection(1)" id="keyTab1" class="px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">Listening</button>
+                <button onclick="renderKeySection(2)" id="keyTab2" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Structure</button>
+                <button onclick="renderKeySection(3)" id="keyTab3" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Reading</button>
+            </div>
+
+            <div id="keyContent" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                </div>
+
+            <div class="mt-6 text-right">
+                <button onclick="closeAnswerKey()" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-bold hover:bg-slate-300 transition">Close</button>
+            </div>
+        </div>
+    </div>
+    <script>
 /* ================= CONFIGURATION ================= */
-// Set Token Password Here
 const ACCESS_TOKEN = "593771"; 
 
-/* ================= DATA BANK (Complete 140 Questions) ================= */
+/* ================= DATA BANK ================= */
 
-// LISTENING (1-50): Part A (Scripts 1-30), Part B (31-38), Part C (39-50)
+// LISTENING (1-50)
 const Q_LISTENING = [
-    // PART A (1-30)
     {q:"What does the man imply?", a:{A:"The exam will be very straightforward.",B:"The woman has no reason to worry.",C:"The exam will be challenging.",D:"The professor is retiring this semester."}},
     {q:"What does the woman mean?", a:{A:"The coffee pot is empty.",B:"There is plenty of fresh coffee.",C:"The coffee is too hot to drink.",D:"She wants the man to make more coffee."}},
     {q:"What does the man mean?", a:{A:"He didn't attend the lecture.",B:"He thought the lecture was interesting.",C:"He fell asleep during the session.",D:"He also found the lecture very long and boring."}},
@@ -320,8 +323,6 @@ const Q_LISTENING = [
     {q:"What does the woman mean?", a:{A:"She found the workshop very easy.",B:"The material was too difficult for her to understand.",C:"She enjoyed the workshop very much.",D:"The workshop was held in a tall building."}},
     {q:"What is the man's suggestion?", a:{A:"Purchase the laptop immediately.",B:"Buy the laptop from a different store.",C:"Delay the purchase to get a better price.",D:"Borrow a laptop from the library instead."}},
     {q:"What does the woman imply?", a:{A:"She is not interested in the results.",B:"The analysis took longer than she expected.",C:"She knew the results would be positive.",D:"She wants the man to repeat the analysis."}},
-    
-    // PART B (31-38)
     {q:"What is the main subject of the conversation?", a:{A:"A competition for board game designers.",B:"An upcoming seminar on Sharia-compliant ESG.",C:"A job interview at KNEKS.",D:"A coffee meeting to discuss stock valuations."}},
     {q:"Why is the man interested in the event?", a:{A:"He wants to apply for an internship.",B:"He needs to complete a mandatory faculty requirement.",C:"He wants to use the information for his board game project.",D:"He is the one organizing the seminar."}},
     {q:"Who will be the keynote speaker?", a:{A:"A student from the finance club.",B:"A professor from the strategic management department.",C:"A senior analyst from a national committee.",D:"A representative from a board game company."}},
@@ -330,8 +331,6 @@ const Q_LISTENING = [
     {q:"What specific training topic is mentioned for the local businesses?", a:{A:"Advanced technical analysis.",B:"QRIS and marketplace account setup.",C:"How to write a formal research paper.",D:"Strategic management for multinational corporations."}},
     {q:"What is the man’s current concern?", a:{A:"The volunteers are not interested.",B:"The TOR has not been written yet.",C:"The transportation logistics are not confirmed.",D:"He doesn't know how to use digital payments."}},
     {q:"When will the final briefing take place?", a:{A:"This afternoon.",B:"Next Friday.",C:"This Saturday.",D:"Right before they leave for the village."}},
-    
-    // PART C (39-50)
     {q:"What is the main topic of the lecture?", a:{A:"The history of the Indonesian stock exchange.",B:"The screening process for Sharia-compliant stocks.",C:"How to calculate interest rates in a bank.",D:"The biography of a famous Sharia analyst."}},
     {q:"What is the maximum limit for interest-based debt in Sharia screening?", a:{A:"10% of total revenue.",B:"25% of total liabilities.",C:"45% of total assets.",D:"50% of total equity."}},
     {q:"According to the speaker, what must stay below 10%?", a:{A:"The company's total debt.",B:"Non-halal revenue.",C:"The number of board members.",D:"The annual dividend payout."}},
@@ -348,7 +347,6 @@ const Q_LISTENING = [
 
 // STRUCTURE (1-40)
 const Q_STRUCTURE = [
-    // 1-15 (Standard Sentence Completion)
     {q:"Rarely _______ a company's market capitalization grow so exponentially without a corresponding increase in tangible assets.",a:{A:"does",B:"is",C:"has",D:"it has"}},
     {q:"It is imperative that the Federal Reserve _______ the interest rates to mitigate the looming risk of stagflation.",a:{A:"adjusts",B:"adjust",C:"adjusted",D:"adjusting"}},
     {q:"_______ by the sudden volatility in the cryptocurrency market, many institutional investors withdrew their hedge funds.",a:{A:"To alarm",B:"Alarming",C:"Alarmed",D:"They were alarmed"}},
@@ -364,8 +362,6 @@ const Q_STRUCTURE = [
     {q:"Had the treasury anticipated the fluctuation, they _______ more aggressive hedging strategies.",a:{A:"would adopt",B:"would have adopted",C:"will adopt",D:"had adopted"}},
     {q:"The price of Brent crude oil is influenced by geopolitical tensions, _______, and OPEC production quotas.",a:{A:"how the market demands",B:"market demand",C:"demanding by the market",D:"that the market demands"}},
     {q:"_______ is often overlooked by startup founders is the importance of long-term scalability.",a:{A:"What",B:"That",C:"Which",D:"It"}},
-
-    // 16-40 (Error Recognition - Your Custom Data)
     {q:"Identify the error:\n\nThe fluctuating (A) prices of gold, which is (B) influenced by global geopolitical tensions (C) and market speculation, causes (D) significant volatility.",a:{A:"(A) fluctuating",B:"(B) is",C:"(C) tensions",D:"(D) causes"}},
     {q:"Identify the error:\n\nDuring the fiscal (A) year, the corporation focused on maximizing (B) profits, expanding (C) market share, and to improve (D) consumer relations.",a:{A:"(A) fiscal",B:"(B) maximizing",C:"(C) expanding",D:"(D) to improve"}},
     {q:"Identify the error:\n\nDespite (A) the economic recession (B) was severe, the manufacturing sector managed to maintain (C) its production levels due to (D) automation.",a:{A:"(A) Despite",B:"(B) was",C:"(C) maintain",D:"(D) due to"}},
@@ -455,22 +451,10 @@ const Q_READING = [
     {p:5,q:"'Monumental architecture' illustrates...",a:{A:"Engineering skills",B:"Ideological power/hierarchy",C:"Protection",D:"Health decline"}}
 ];
 
-// KEYS & SCORING (Aligned with content)
+// KEYS & SCORING
 const DB_KEYS = {
-    // Listening Keys (Based on previous prompts: 1-30 script keys, 31-38 logic, 39-50 lectures)
-    s1: [
-        'A','B','C','D','A','B','C','D','A','B', // 1-10
-        'C','B','D','A','B','C','A','B','C','D', // 11-20
-        'A','B','C','A','B','C','D','A','B','C', // 21-30
-        'B','A','C','D','B','A','C','D',         // 31-38
-        'B','C','A','D','B','A','C','D','B','A','C','B' // 39-50
-],
-    // Structure Keys (1-15 Standard, 16-40 Error Recog)
-    s2: [
-        'A','B','C','B','A','B','C','A','B','C','C','C','B','B','A', // 1-15
-        'D','D','A','B','A','D','C','C','C','B','A','C','B','A','D','B','B','B','C','C','A','C','B','D','C' // 16-40
-    ],
-    // Reading Keys (1-50 Standard)
+    s1: ['A','B','C','D','A','B','C','D','A','B','C','B','D','A','B','C','A','B','C','D','A','B','C','A','B','C','D','A','B','C','B','A','C','D','B','A','C','D','B','C','A','D','B','A','C','D','B','A','C','B'],
+    s2: ['A','B','C','B','A','B','C','A','B','C','C','C','B','B','A','D','D','A','B','A','D','C','C','C','B','A','C','B','A','D','B','B','B','C','C','A','C','B','D','C'],
     s3: ['B','A','C','C','A','B','B','C','C','C','C','B','A','C','C','B','C','C','B','D','C','B','A','C','B','B','C','B','B','C','C','B','C','C','A','C','C','B','A','B','B','B','B','C','B','B','C','B','B','B']
 };
 
@@ -480,372 +464,8 @@ const DB_CONV = {
     s3: [31,31,32,32,33,33,34,35,36,37,38,39,40,41,42,43,44,45,46,46,47,48,48,49,50,51,52,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,67,67,67,67,67,67,67,67]
 };
 
-// ================= APP LOGIC =================
-
-const state = {
-    sec: 1,
-    qNum: 0,
-    ans: {},
-    times: [35*60, 25*60, 55*60],
-    curTime: 35*60,
-    timer: null,
-    locked: [false, false, false]
-};
-
-// --- NEW TOKEN FUNCTION ---
-function verifyToken() {
-    const input = document.getElementById('tokenInput').value.trim().toUpperCase();
-    const errorMsg = document.getElementById('tokenError');
-    const tokenSection = document.getElementById('tokenSection');
-    
-    if (input === ACCESS_TOKEN) {
-        tokenSection.style.display = 'none';
-        document.getElementById('startBtnContainer').classList.remove('hidden');
-    } else {
-        errorMsg.classList.remove('hidden');
-        tokenSection.classList.remove('shake');
-        void tokenSection.offsetWidth; // trigger reflow
-        tokenSection.classList.add('shake');
-    }
-}
-
-function startTest() {
-    const audioPlayer = document.getElementById('mainAudio');
-    const audioContainer = document.getElementById('audioPlayerContainer');
-    
-    // 1. Kickstart audio (WAJIB BUAT HP)
-    if (audioPlayer) {
-        audioPlayer.load();
-    }
-    
-    // 2. Tampilkan Layar Utama
-    document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('testScreen').classList.remove('hidden');
-    document.getElementById('testScreen').classList.add('flex');
-    
-    // 3. Langsung paksa munculkan container audio jika di Section 1
-    if (audioContainer) {
-        audioContainer.classList.remove('hidden');
-    }
-    
-    showSection(1);
-}
-
-function showSection(s) {
-    if (state.locked[state.sec-1] && s < state.sec) {
-        alert("Section sebelumnya sudah terkunci.");
-        return;
-    }
-    
-    state.sec = s;
-    state.qNum = 0;
-    state.curTime = state.times[s-1];
-    
-    const audioContainer = document.getElementById('audioPlayerContainer');
-    const audioPlayer = document.getElementById('mainAudio');
-    
-    // Kontrol Muncul/Sembunyi Audio Player
-    if (s === 1) {
-        if (audioContainer) audioContainer.classList.remove('hidden');
-    } else {
-        if (audioContainer) audioContainer.classList.add('hidden');
-        if (audioPlayer) {
-            audioPlayer.pause();
-            audioPlayer.currentTime = 0;
-        }
-    }
-
-    // Update Tampilan Tab Navigasi
-    [1,2,3].forEach(i => {
-        const btn = document.getElementById(`navSec${i}`);
-        if(i === s) {
-            btn.className = "px-4 py-2 rounded-lg text-sm font-bold text-blue-600 bg-blue-50 border border-blue-200 shadow-sm";
-        } else {
-            btn.className = "px-4 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 cursor-default";
-        }
-    });
-
-    clearInterval(state.timer);
-    startTimer();
-    renderQ();
-    renderTracker();
-}
-
-function renderQ() {
-    const qData = state.sec === 1 ? Q_LISTENING[state.qNum] : 
-                  state.sec === 2 ? Q_STRUCTURE[state.qNum] : 
-                  Q_READING[state.qNum];
-    
-    const max = state.sec === 2 ? 40 : 50;
-    const key = `s${state.sec}_${state.qNum}`;
-    
-    let html = `
-        <div class="mb-6">
-            <span class="text-xs font-bold text-blue-600 uppercase tracking-wide">Question ${state.qNum + 1} of ${max}</span>
-            <div class="h-1 w-full bg-slate-100 rounded-full mt-2">
-                <div class="h-1 bg-blue-600 rounded-full transition-all duration-300" style="width: ${((state.qNum+1)/max)*100}%"></div>
-            </div>
-        </div>
-    `;
-
-    // Passage (Reading)
-    if (state.sec === 3 && qData.p) {
-        const passage = PASSAGES['p' + qData.p];
-        html += `
-        <div class="mb-6 passage-box shadow-inner">
-            <h4 class="font-bold text-blue-900 mb-2 sticky top-0 bg-slate-50 pb-2 border-b border-slate-200">${passage.title}</h4>
-            <div class="text-justify">${passage.text.replace(/\n\n/g, '<br><br>')}</div>
-        </div>`;
-    }
-
-    // Question Text
-    html += `<h3 class="text-lg font-bold text-slate-800 mb-6 leading-relaxed whitespace-pre-wrap">${qData.q}</h3>`;
-
-    // Options
-    html += `<div class="space-y-3">`;
-    ['A','B','C','D'].forEach(opt => {
-        const isSel = state.ans[key] === opt;
-        html += `
-        <label class="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${isSel ? 'bg-blue-50 border-blue-500' : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50'}">
-            <input type="radio" name="opt" class="hidden" ${isSel ? 'checked' : ''} onclick="answer('${key}', '${opt}')">
-            <div class="radio-circle w-6 h-6 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors"></div>
-            <div class="text-slate-700 font-medium">
-                <span class="font-bold text-slate-900 mr-2">(${opt})</span> ${qData.a[opt]}
-            </div>
-        </label>`;
-    });
-    html += `</div>`;
-
-    document.getElementById('questionContainer').innerHTML = html;
-    
-    // Update Next Button
-    const btn = document.getElementById('nextBtn');
-    if (state.sec === 3 && state.qNum === 49) {
-        btn.textContent = "Finish Test";
-        btn.className = "px-6 py-3 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl font-semibold transition shadow-md";
-    } else if (state.qNum === max - 1) {
-        btn.textContent = "Finish Section";
-        btn.className = "px-6 py-3 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-semibold transition shadow-md";
-    } else {
-        btn.textContent = "Next";
-        btn.className = "px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-semibold transition shadow-md";
-    }
-
-    renderTracker();
-}
-
-function renderTracker() {
-    const max = state.sec === 2 ? 40 : 50;
-    const grid = document.getElementById('trackerGrid');
-    let html = '';
-    let answered = 0;
-
-    for(let i=0; i<max; i++) {
-        const key = `s${state.sec}_${i}`;
-        const isAns = state.ans[key];
-        const isCurr = state.qNum === i;
-        if(isAns) answered++;
-
-        let cls = "h-9 w-full rounded text-xs font-medium transition-all duration-200 ";
-        if(isCurr) cls += "btn-current";
-        else if(isAns) cls += "btn-answered";
-        else cls += "btn-unanswered";
-
-        html += `<button onclick="jump(${i})" class="${cls}">${i+1}</button>`;
-    }
-    grid.innerHTML = html;
-    document.getElementById('progressText').textContent = `${answered}/${max}`;
-
-    // Show Sidebar Submit only on Section 3
-    const sbBtn = document.getElementById('submitBtnSidebar');
-    if(state.sec === 3) sbBtn.classList.remove('hidden');
-    else sbBtn.classList.add('hidden');
-}
-
-function answer(key, opt) {
-    state.ans[key] = opt;
-    renderTracker();
-    // Slight delay visual feedback
-    setTimeout(() => {
-        const radios = document.querySelectorAll('input[type="radio"]');
-        radios.forEach(r => {
-            if(r.checked) r.parentElement.classList.add('bg-blue-50', 'border-blue-500');
-            else r.parentElement.classList.remove('bg-blue-50', 'border-blue-500');
-        });
-    }, 50);
-}
-
-function jump(i) {
-    state.qNum = i;
-    renderQ();
-}
-
-function nextQ() {
-    const max = state.sec === 2 ? 40 : 50;
-    if (state.qNum < max - 1) {
-        state.qNum++;
-        renderQ();
-    } else {
-        if (state.sec < 3) {
-            if(confirm(`Finish Section ${state.sec}? You cannot return.`)) {
-                state.locked[state.sec-1] = true;
-                showSection(state.sec+1);
-            }
-        } else {
-            submitTest();
-        }
-    }
-}
-
-function prevQ() {
-    if(state.qNum > 0) {
-        state.qNum--;
-        renderQ();
-    }
-}
-
-function startTimer() {
-    state.timer = setInterval(() => {
-        state.curTime--;
-        const m = Math.floor(state.curTime / 60);
-        const s = state.curTime % 60;
-        document.getElementById('sectionTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-        
-        // Simple Total Time Decrease (approx)
-        const totalSecs = parseInt(document.getElementById('totalTimeDisplay').textContent.split(':')[0])*60; 
-        
-        if(state.curTime <= 0) {
-            clearInterval(state.timer);
-            alert("Time's up!");
-            if(state.sec < 3) showSection(state.sec+1);
-            else submitTest();
-        }
-    }, 1000);
-}
-
-function submitTest() {
-    if(!confirm("Submit and finish test?")) return;
-    clearInterval(state.timer);
-
-    // Scoring
-    let c1=0, c2=0, c3=0;
-    
-    // Listening
-    for(let i=0; i<50; i++) {
-        if(state.ans[`s1_${i}`] === DB_KEYS.s1[i]) c1++;
-    }
-    // Structure
-    for(let i=0; i<40; i++) {
-        if(state.ans[`s2_${i}`] === DB_KEYS.s2[i]) c2++;
-    }
-    // Reading
-    for(let i=0; i<50; i++) {
-        if(state.ans[`s3_${i}`] === DB_KEYS.s3[i]) c3++;
-    }
-
-    const s1 = DB_CONV.s1[c1] || 31;
-    const s2 = DB_CONV.s2[c2] || 31;
-    const s3 = DB_CONV.s3[c3] || 31;
-    const final = Math.round((s1+s2+s3)*10/3);
-
-    document.getElementById('testScreen').classList.add('hidden');
-    document.getElementById('resultsScreen').classList.remove('hidden');
-
-    // Animate Score
-    let currentScore = 310;
-    const scoreInterval = setInterval(() => {
-        currentScore += 5;
-        if(currentScore >= final) {
-            currentScore = final;
-            clearInterval(scoreInterval);
-        }
-        document.getElementById('finalScore').textContent = currentScore;
-    }, 20);
-
-    document.getElementById('scoreSec1').textContent = s1;
-    document.getElementById('scoreSec2').textContent = s2;
-    document.getElementById('scoreSec3').textContent = s3;
-
-    document.getElementById('correctSec1').textContent = `${c1}/50 Correct`;
-    document.getElementById('correctSec2').textContent = `${c2}/40 Correct`;
-    document.getElementById('correctSec3').textContent = `${c3}/50 Correct`;
-}
-/* ================= ANSWER KEY LOGIC ================= */
-let currentKeySec = 1;
-
-function showAnswerKey() {
-    document.getElementById('answerKeyModal').classList.remove('hidden');
-    renderKeySection(1);
-}
-
-function closeAnswerKey() {
-    document.getElementById('answerKeyModal').classList.add('hidden');
-}
-
-function renderKeySection(sec) {
-    currentKeySec = sec;
-    const container = document.getElementById('keyContent');
-    const questions = sec === 1 ? Q_LISTENING : sec === 2 ? Q_STRUCTURE : Q_READING;
-    const keys = sec === 1 ? DB_KEYS.s1 : sec === 2 ? DB_KEYS.s2 : DB_KEYS.s3;
-    const explanations = sec === 1 ? EXPLANATIONS.s1 : sec === 2 ? EXPLANATIONS.s2 : EXPLANATIONS.s3;
-    
-    // Update Tabs
-    [1,2,3].forEach(i => {
-        const tab = document.getElementById(`keyTab${i}`);
-        if(i === sec) tab.className = "px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600 transition";
-        else tab.className = "px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition";
-    });
-
-    let html = '';
-    
-    questions.forEach((qItem, index) => {
-        const qNum = index + 1;
-        const correctKey = keys[index];
-        const userKey = state.ans[`s${sec}_${index}`];
-        const isCorrect = userKey === correctKey;
-        const explanationText = explanations[qNum] || "No explanation available.";
-        
-        // Reading Passage Title (Only once per passage)
-        let passageHeader = '';
-        if (sec === 3 && qItem.p) {
-             const prevQ = questions[index-1];
-             if (!prevQ || prevQ.p !== qItem.p) {
-                 passageHeader = `<div class="bg-slate-100 p-2 rounded text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 mt-4">Passage ${qItem.p}</div>`;
-             }
-        }
-
-        html += `
-        ${passageHeader}
-        <div class="key-card ${isCorrect ? 'correct' : 'wrong'}">
-            <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">${qNum}</span>
-                    <span class="${isCorrect ? 'badge-correct' : 'badge-wrong'}">
-                        ${isCorrect ? 'Correct' : 'Incorrect'}
-                    </span>
-                </div>
-                <div class="text-xs font-mono text-slate-400">Answer: ${correctKey}</div>
-            </div>
-            
-            <p class="text-sm text-slate-800 font-medium mb-2">${qItem.q}</p>
-            
-            <div class="text-xs text-slate-500 grid grid-cols-2 gap-2 mb-3 bg-white p-2 rounded border border-slate-100">
-                <div>Your Answer: <span class="font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-500'}">${userKey || '-'}</span></div>
-                <div>Correct Answer: <span class="font-bold text-emerald-600">${correctKey}</span></div>
-            </div>
-
-            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                <div class="text-[10px] uppercase font-bold text-blue-400 mb-1">Expert Analysis</div>
-                <p class="text-sm text-blue-900 leading-relaxed">${explanationText}</p>
-            </div>
-        </div>`;
-    });
-
-    container.innerHTML = html;
-}
-/* ================= DATA PEMBAHASAN (EXPLANATIONS) ================= */
+// EXPLANATIONS (NEW DATA)
 const EXPLANATIONS = {
-    // Listening Section
     s1: {
         1: "Paraphrasing: The idiom 'eating into' means to reduce the amount or value of something, in this case, consumer savings.",
         2: "Negation/Suggestion: The phrase 'Not unless' suggests that the report is currently flawed (contains typos) and needs revision.",
@@ -898,7 +518,6 @@ const EXPLANATIONS = {
         49: "Game Mechanics: The simulation rewards ethical behavior (low carbon footprint) to mirror real-world ESG values.",
         50: "Educational Intent: The ultimate goal is pedagogical—using games to improve student understanding of ethics."
     },
-    // Structure Section
     s2: {
         1: "Negative Inversion: When a sentence begins with 'Rarely', the subject and auxiliary must be inverted (Rarely does...).",
         2: "Subjunctive Mode: Words like 'imperative' trigger the subjunctive. The verb following 'that' must be base form (adjust).",
@@ -941,7 +560,6 @@ const EXPLANATIONS = {
         39: "Word Form: 'Effect' is a noun. Verb is 'Affect' (affects).",
         40: "Infinitive Phrase: 'Tend to' takes base verb -> 'spend', not 'spending'."
     },
-    // Reading Section
     s3: {
         1: "Main Idea: The text explores 'dark flow' as a challenge to the established 'Cosmological Principle'.",
         2: "Vocab: In this context, 'posits' means to assume or suggest as a theoretical basis.",
@@ -996,7 +614,233 @@ const EXPLANATIONS = {
     }
 };
 
-/* ================= ANSWER KEY LOGIC ================= */
+/* ================= APP LOGIC ================= */
+
+const state = {
+    sec: 1,
+    qNum: 0,
+    ans: {},
+    times: [35*60, 25*60, 55*60],
+    curTime: 35*60,
+    timer: null,
+    locked: [false, false, false]
+};
+
+function verifyToken() {
+    const input = document.getElementById('tokenInput').value.trim().toUpperCase();
+    const errorMsg = document.getElementById('tokenError');
+    const tokenSection = document.getElementById('tokenSection');
+    
+    if (input === ACCESS_TOKEN) {
+        tokenSection.style.display = 'none';
+        document.getElementById('startBtnContainer').classList.remove('hidden');
+    } else {
+        errorMsg.classList.remove('hidden');
+        tokenSection.classList.remove('shake');
+        void tokenSection.offsetWidth; 
+        tokenSection.classList.add('shake');
+    }
+}
+
+function startTest() {
+    const audioPlayer = document.getElementById('mainAudio');
+    const audioContainer = document.getElementById('audioPlayerContainer');
+    if (audioPlayer) audioPlayer.load();
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('testScreen').classList.remove('hidden');
+    document.getElementById('testScreen').classList.add('flex');
+    if (audioContainer) audioContainer.classList.remove('hidden');
+    showSection(1);
+}
+
+function showSection(s) {
+    if (state.locked[state.sec-1] && s < state.sec) {
+        alert("Section sebelumnya sudah terkunci.");
+        return;
+    }
+    state.sec = s;
+    state.qNum = 0;
+    state.curTime = state.times[s-1];
+    
+    const audioContainer = document.getElementById('audioPlayerContainer');
+    const audioPlayer = document.getElementById('mainAudio');
+    
+    if (s === 1) {
+        if (audioContainer) audioContainer.classList.remove('hidden');
+    } else {
+        if (audioContainer) audioContainer.classList.add('hidden');
+        if (audioPlayer) {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+        }
+    }
+
+    [1,2,3].forEach(i => {
+        const btn = document.getElementById(`navSec${i}`);
+        if(i === s) btn.className = "px-4 py-2 rounded-lg text-sm font-bold text-blue-600 bg-blue-50 border border-blue-200 shadow-sm";
+        else btn.className = "px-4 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 cursor-default";
+    });
+
+    clearInterval(state.timer);
+    startTimer();
+    renderQ();
+    renderTracker();
+}
+
+function renderQ() {
+    const qData = state.sec === 1 ? Q_LISTENING[state.qNum] : 
+                  state.sec === 2 ? Q_STRUCTURE[state.qNum] : 
+                  Q_READING[state.qNum];
+    const max = state.sec === 2 ? 40 : 50;
+    const key = `s${state.sec}_${state.qNum}`;
+    
+    let html = `
+        <div class="mb-6">
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wide">Question ${state.qNum + 1} of ${max}</span>
+            <div class="h-1 w-full bg-slate-100 rounded-full mt-2">
+                <div class="h-1 bg-blue-600 rounded-full transition-all duration-300" style="width: ${((state.qNum+1)/max)*100}%"></div>
+            </div>
+        </div>
+    `;
+
+    if (state.sec === 3 && qData.p) {
+        const passage = PASSAGES['p' + qData.p];
+        html += `
+        <div class="mb-6 passage-box shadow-inner">
+            <h4 class="font-bold text-blue-900 mb-2 sticky top-0 bg-slate-50 pb-2 border-b border-slate-200">${passage.title}</h4>
+            <div class="text-justify">${passage.text.replace(/\n\n/g, '<br><br>')}</div>
+        </div>`;
+    }
+
+    html += `<h3 class="text-lg font-bold text-slate-800 mb-6 leading-relaxed whitespace-pre-wrap">${qData.q}</h3>`;
+    html += `<div class="space-y-3">`;
+    ['A','B','C','D'].forEach(opt => {
+        const isSel = state.ans[key] === opt;
+        html += `
+        <label class="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${isSel ? 'bg-blue-50 border-blue-500' : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50'}">
+            <input type="radio" name="opt" class="hidden" ${isSel ? 'checked' : ''} onclick="answer('${key}', '${opt}')">
+            <div class="radio-circle w-6 h-6 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors"></div>
+            <div class="text-slate-700 font-medium"><span class="font-bold text-slate-900 mr-2">(${opt})</span> ${qData.a[opt]}</div>
+        </label>`;
+    });
+    html += `</div>`;
+
+    document.getElementById('questionContainer').innerHTML = html;
+    
+    const btn = document.getElementById('nextBtn');
+    if (state.sec === 3 && state.qNum === 49) {
+        btn.textContent = "Finish Test";
+        btn.className = "px-6 py-3 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl font-semibold transition shadow-md";
+    } else if (state.qNum === max - 1) {
+        btn.textContent = "Finish Section";
+        btn.className = "px-6 py-3 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-semibold transition shadow-md";
+    } else {
+        btn.textContent = "Next";
+        btn.className = "px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-semibold transition shadow-md";
+    }
+    renderTracker();
+}
+
+function renderTracker() {
+    const max = state.sec === 2 ? 40 : 50;
+    const grid = document.getElementById('trackerGrid');
+    let html = '';
+    let answered = 0;
+
+    for(let i=0; i<max; i++) {
+        const key = `s${state.sec}_${i}`;
+        const isAns = state.ans[key];
+        const isCurr = state.qNum === i;
+        if(isAns) answered++;
+        let cls = "h-9 w-full rounded text-xs font-medium transition-all duration-200 ";
+        if(isCurr) cls += "btn-current"; else if(isAns) cls += "btn-answered"; else cls += "btn-unanswered";
+        html += `<button onclick="jump(${i})" class="${cls}">${i+1}</button>`;
+    }
+    grid.innerHTML = html;
+    document.getElementById('progressText').textContent = `${answered}/${max}`;
+    const sbBtn = document.getElementById('submitBtnSidebar');
+    if(state.sec === 3) sbBtn.classList.remove('hidden'); else sbBtn.classList.add('hidden');
+}
+
+function answer(key, opt) {
+    state.ans[key] = opt;
+    renderTracker();
+    setTimeout(() => {
+        const radios = document.querySelectorAll('input[type="radio"]');
+        radios.forEach(r => {
+            if(r.checked) r.parentElement.classList.add('bg-blue-50', 'border-blue-500');
+            else r.parentElement.classList.remove('bg-blue-50', 'border-blue-500');
+        });
+    }, 50);
+}
+
+function jump(i) { state.qNum = i; renderQ(); }
+
+function nextQ() {
+    const max = state.sec === 2 ? 40 : 50;
+    if (state.qNum < max - 1) {
+        state.qNum++;
+        renderQ();
+    } else {
+        if (state.sec < 3) {
+            if(confirm(`Finish Section ${state.sec}? You cannot return.`)) {
+                state.locked[state.sec-1] = true;
+                showSection(state.sec+1);
+            }
+        } else {
+            submitTest();
+        }
+    }
+}
+
+function prevQ() { if(state.qNum > 0) { state.qNum--; renderQ(); } }
+
+function startTimer() {
+    state.timer = setInterval(() => {
+        state.curTime--;
+        const m = Math.floor(state.curTime / 60);
+        const s = state.curTime % 60;
+        document.getElementById('sectionTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if(state.curTime <= 0) {
+            clearInterval(state.timer);
+            alert("Time's up!");
+            if(state.sec < 3) showSection(state.sec+1); else submitTest();
+        }
+    }, 1000);
+}
+
+function submitTest() {
+    if(!confirm("Submit and finish test?")) return;
+    clearInterval(state.timer);
+    let c1=0, c2=0, c3=0;
+    for(let i=0; i<50; i++) if(state.ans[`s1_${i}`] === DB_KEYS.s1[i]) c1++;
+    for(let i=0; i<40; i++) if(state.ans[`s2_${i}`] === DB_KEYS.s2[i]) c2++;
+    for(let i=0; i<50; i++) if(state.ans[`s3_${i}`] === DB_KEYS.s3[i]) c3++;
+
+    const s1 = DB_CONV.s1[c1] || 31;
+    const s2 = DB_CONV.s2[c2] || 31;
+    const s3 = DB_CONV.s3[c3] || 31;
+    const final = Math.round((s1+s2+s3)*10/3);
+
+    document.getElementById('testScreen').classList.add('hidden');
+    document.getElementById('resultsScreen').classList.remove('hidden');
+
+    let currentScore = 310;
+    const scoreInterval = setInterval(() => {
+        currentScore += 5;
+        if(currentScore >= final) { currentScore = final; clearInterval(scoreInterval); }
+        document.getElementById('finalScore').textContent = currentScore;
+    }, 20);
+
+    document.getElementById('scoreSec1').textContent = s1;
+    document.getElementById('scoreSec2').textContent = s2;
+    document.getElementById('scoreSec3').textContent = s3;
+    document.getElementById('correctSec1').textContent = `${c1}/50 Correct`;
+    document.getElementById('correctSec2').textContent = `${c2}/40 Correct`;
+    document.getElementById('correctSec3').textContent = `${c3}/50 Correct`;
+}
+
+/* ================= ANSWER KEY LOGIC (NEW) ================= */
 let currentKeySec = 1;
 
 function showAnswerKey() {
@@ -1015,7 +859,6 @@ function renderKeySection(sec) {
     const keys = sec === 1 ? DB_KEYS.s1 : sec === 2 ? DB_KEYS.s2 : DB_KEYS.s3;
     const explanations = sec === 1 ? EXPLANATIONS.s1 : sec === 2 ? EXPLANATIONS.s2 : EXPLANATIONS.s3;
     
-    // Update Tabs
     [1,2,3].forEach(i => {
         const tab = document.getElementById(`keyTab${i}`);
         if(i === sec) tab.className = "px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600 transition";
@@ -1023,7 +866,6 @@ function renderKeySection(sec) {
     });
 
     let html = '';
-    
     questions.forEach((qItem, index) => {
         const qNum = index + 1;
         const correctKey = keys[index];
@@ -1031,7 +873,6 @@ function renderKeySection(sec) {
         const isCorrect = userKey === correctKey;
         const explanationText = explanations[qNum] || "No explanation available.";
         
-        // Reading Passage Title (Only once per passage)
         let passageHeader = '';
         if (sec === 3 && qItem.p) {
              const prevQ = questions[index-1];
@@ -1046,30 +887,23 @@ function renderKeySection(sec) {
             <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
                     <span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">${qNum}</span>
-                    <span class="${isCorrect ? 'badge-correct' : 'badge-wrong'}">
-                        ${isCorrect ? 'Correct' : 'Incorrect'}
-                    </span>
+                    <span class="${isCorrect ? 'badge-correct' : 'badge-wrong'}">${isCorrect ? 'Correct' : 'Incorrect'}</span>
                 </div>
                 <div class="text-xs font-mono text-slate-400">Answer: ${correctKey}</div>
             </div>
-            
             <p class="text-sm text-slate-800 font-medium mb-2">${qItem.q}</p>
-            
             <div class="text-xs text-slate-500 grid grid-cols-2 gap-2 mb-3 bg-white p-2 rounded border border-slate-100">
                 <div>Your Answer: <span class="font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-500'}">${userKey || '-'}</span></div>
                 <div>Correct Answer: <span class="font-bold text-emerald-600">${correctKey}</span></div>
             </div>
-
             <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
                 <div class="text-[10px] uppercase font-bold text-blue-400 mb-1">Expert Analysis</div>
                 <p class="text-sm text-blue-900 leading-relaxed">${explanationText}</p>
             </div>
         </div>`;
     });
-
     container.innerHTML = html;
 }
 </script>
 </body>
 </html>
-
