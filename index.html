@@ -62,6 +62,32 @@
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
         }
+/* Answer Key Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 100;
+            display: flex; justify-content: center; items-align: start;
+            padding: 2rem;
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white; width: 100%; max-width: 4xl;
+            border-radius: 1.5rem; padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .key-card {
+            border: 1px solid #e2e8f0; border-radius: 0.75rem;
+            padding: 1rem; margin-bottom: 1rem;
+            background: #f8fafc; transition: all 0.2s;
+        }
+        .key-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .key-card.correct { border-left: 4px solid #10b981; }
+        .key-card.wrong { border-left: 4px solid #ef4444; }
+        
+        .badge-correct { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .badge-wrong { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col text-slate-800">
@@ -222,12 +248,36 @@
                     </div>
                 </div>
 
-                <div class="p-8 bg-slate-50 border-t border-slate-100 text-center">
-                    <button onclick="location.reload()" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition">Retake Test</button>
+              <div class="p-8 bg-slate-50 border-t border-slate-100 flex justify-center gap-4">
+                    <button onclick="location.reload()" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg">Retake Test</button>
+                    <button onclick="showAnswerKey()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">View Answer Key</button>
+                </div>
+            </div> </div> <div id="answerKeyModal" class="hidden modal-overlay">
+            <div class="modal-content max-w-4xl mx-auto mt-10 mb-10">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Answer Keys & Explanations</h2>
+                        <p class="text-slate-500 text-sm">Review your mistakes and understand the logic.</p>
+                    </div>
+                    <button onclick="closeAnswerKey()" class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="flex gap-2 mb-6 border-b border-slate-200 pb-1">
+                    <button onclick="renderKeySection(1)" id="keyTab1" class="px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">Listening</button>
+                    <button onclick="renderKeySection(2)" id="keyTab2" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Structure</button>
+                    <button onclick="renderKeySection(3)" id="keyTab3" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Reading</button>
+                </div>
+
+                <div id="keyContent" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                    </div>
+
+                <div class="mt-6 text-right">
+                    <button onclick="closeAnswerKey()" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-bold hover:bg-slate-300 transition">Close</button>
                 </div>
             </div>
-        </div>
-
+        </div>            
     </main>
 
 <script>
@@ -720,6 +770,306 @@ function submitTest() {
     document.getElementById('correctSec2').textContent = `${c2}/40 Correct`;
     document.getElementById('correctSec3').textContent = `${c3}/50 Correct`;
 }
+/* ================= ANSWER KEY LOGIC ================= */
+let currentKeySec = 1;
+
+function showAnswerKey() {
+    document.getElementById('answerKeyModal').classList.remove('hidden');
+    renderKeySection(1);
+}
+
+function closeAnswerKey() {
+    document.getElementById('answerKeyModal').classList.add('hidden');
+}
+
+function renderKeySection(sec) {
+    currentKeySec = sec;
+    const container = document.getElementById('keyContent');
+    const questions = sec === 1 ? Q_LISTENING : sec === 2 ? Q_STRUCTURE : Q_READING;
+    const keys = sec === 1 ? DB_KEYS.s1 : sec === 2 ? DB_KEYS.s2 : DB_KEYS.s3;
+    const explanations = sec === 1 ? EXPLANATIONS.s1 : sec === 2 ? EXPLANATIONS.s2 : EXPLANATIONS.s3;
+    
+    // Update Tabs
+    [1,2,3].forEach(i => {
+        const tab = document.getElementById(`keyTab${i}`);
+        if(i === sec) tab.className = "px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600 transition";
+        else tab.className = "px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition";
+    });
+
+    let html = '';
+    
+    questions.forEach((qItem, index) => {
+        const qNum = index + 1;
+        const correctKey = keys[index];
+        const userKey = state.ans[`s${sec}_${index}`];
+        const isCorrect = userKey === correctKey;
+        const explanationText = explanations[qNum] || "No explanation available.";
+        
+        // Reading Passage Title (Only once per passage)
+        let passageHeader = '';
+        if (sec === 3 && qItem.p) {
+             const prevQ = questions[index-1];
+             if (!prevQ || prevQ.p !== qItem.p) {
+                 passageHeader = `<div class="bg-slate-100 p-2 rounded text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 mt-4">Passage ${qItem.p}</div>`;
+             }
+        }
+
+        html += `
+        ${passageHeader}
+        <div class="key-card ${isCorrect ? 'correct' : 'wrong'}">
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">${qNum}</span>
+                    <span class="${isCorrect ? 'badge-correct' : 'badge-wrong'}">
+                        ${isCorrect ? 'Correct' : 'Incorrect'}
+                    </span>
+                </div>
+                <div class="text-xs font-mono text-slate-400">Answer: ${correctKey}</div>
+            </div>
+            
+            <p class="text-sm text-slate-800 font-medium mb-2">${qItem.q}</p>
+            
+            <div class="text-xs text-slate-500 grid grid-cols-2 gap-2 mb-3 bg-white p-2 rounded border border-slate-100">
+                <div>Your Answer: <span class="font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-500'}">${userKey || '-'}</span></div>
+                <div>Correct Answer: <span class="font-bold text-emerald-600">${correctKey}</span></div>
+            </div>
+
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <div class="text-[10px] uppercase font-bold text-blue-400 mb-1">Expert Analysis</div>
+                <p class="text-sm text-blue-900 leading-relaxed">${explanationText}</p>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+/* ================= DATA PEMBAHASAN (EXPLANATIONS) ================= */
+const EXPLANATIONS = {
+    // Listening Section
+    s1: {
+        1: "Paraphrasing: The idiom 'eating into' means to reduce the amount or value of something, in this case, consumer savings.",
+        2: "Negation/Suggestion: The phrase 'Not unless' suggests that the report is currently flawed (contains typos) and needs revision.",
+        3: "Idiom: 'Barely keep my eyes open' is a common expression indicating extreme boredom or lack of engagement.",
+        4: "Suggestion: The woman points out Sami’s expertise, implying the man should seek his professional advice for the BCG Matrix.",
+        5: "Idiom: 'On the drawing board' means a project or idea is still being planned and has not yet been implemented.",
+        6: "Idiom: 'Biting off more than you can chew' means attempting to do something that is too difficult for one’s capacity.",
+        7: "Tone/Sarcasm: 'That’s just great' is used sarcastically to express frustration over an inconvenient event.",
+        8: "Metaphor: Being 'buried under a pile' indicates that the desk is disorganized, making it difficult to find documents.",
+        9: "Idiom: 'Step on it' is an informal way to tell someone to hurry or move faster to meet a deadline.",
+        10: "Direct Suggestion: The woman offers her 'spare' (extra) tool, which is a direct offer to lend the item.",
+        11: "Implied Refusal: Usually involves the speaker mentioning a heavy workload, indicating they cannot assist.",
+        12: "Paraphrasing: Positive results often involve phrases like 'surpassed expectations' or 'exceeded the target.'",
+        13: "Spatial Reference: Indicates a close physical proximity within a building (across the hall).",
+        14: "Time Expression: Terms like 'pushed back' or 'rescheduled' indicate a delay in the original plan.",
+        15: "Agreement: Phrases like 'You can say that again' or 'I'll say' indicate strong concurrence.",
+        16: "Inference: A discussion about strictly enforced deadlines implies the professor does not allow late submissions.",
+        17: "Context: 'Fluctuated' or 'up and down' refers to market volatility, common in Sharia finance discussions.",
+        18: "Direct Action: The speaker mentions a need to obtain official academic records from the registrar.",
+        19: "Time Management: Expressions like 'dragged on' or 'ran over' indicate the meeting exceeded its schedule.",
+        20: "Inference: If many apply and few are chosen, the position is described as 'stiff competition'.",
+        21: "Idiom: To 'polish' something means to refine or improve it to make it more professional.",
+        22: "Price Evaluation: Words like 'steep' or 'rip-off' signify that the cost is too high for the value provided.",
+        23: "Factual Detail: The speaker was unaware of a change because they were absent or not paying attention.",
+        24: "Status Update: 'Getting a facelift' or 'being fixed up' refers to construction or renovation work.",
+        25: "Environmental Interference: High background noise levels prevent the listener from focusing on the speech.",
+        26: "Idiom: If something is 'over one's head,' it means the complexity of the material was beyond their understanding.",
+        27: "Idiom: 'Cold feet' refers to becoming nervous or losing courage right before a significant event.",
+        28: "Conclusion: 'After all' indicates that despite previous doubts, the final result was positive.",
+        29: "Regret (Modal): 'Should have' followed by a past participle expresses a wish for a different past action.",
+        30: "Personality/Tone: A policy or person described as 'approachable' is easy to understand or deal with.",
+        31: "Main Idea: The dialogue centers on a specific project regarding Halal Risk in Padang hotels.",
+        32: "Detail: The woman explicitly mentions her focus on how 'reputation' affects Sharia compliance.",
+        33: "Future Action: They agree that primary data collection (interviews) is the next logical step.",
+        34: "Time Detail: Standard academic deadlines are often explicitly stated toward the end of the conversation.",
+        35: "Goal Identification: The project aims to bridge the digital gap for village businesses through digital payments (QRIS).",
+        36: "Target Audience: The beneficiaries of the Youth Ranger program are the local entrepreneurs (SMEs).",
+        37: "Organizational Detail: As leaders, their primary administrative duty is to finalize the project’s TOR.",
+        38: "Conflict/Challenge: Managing a large, diverse team of 51 people is highlighted as the main difficulty.",
+        39: "Main Point: The lecturer emphasizes the expansion and increasing relevance of the Sharia sector.",
+        40: "Definition: Unlike conventional bonds (debt), a Sukuk represents a partial ownership of an underlying asset.",
+        41: "Institutional Role: The OJK is defined by its oversight and regulatory functions.",
+        42: "Follow-up: Academic talks usually conclude by mentioning the practical application (stock valuation).",
+        43: "Functional Logic: The IE Matrix helps firms decide which divisions to grow, hold, or divest.",
+        44: "Matrix Components: The cells categorize business units into strategic groups like 'Grow and Build'.",
+        45: "Specific Mapping: Cell 1 (high internal/external scores) always falls into the 'Grow and Build' category.",
+        46: "Strategic Value: Managers use this matrix to move away from intuition toward analytical decision-making.",
+        47: "Innovative Approach: The talk highlights how games can simplify complex sustainability (ESG) concepts.",
+        48: "Standard Acronym: ESG stands for Environmental, Social, and Governance.",
+        49: "Game Mechanics: The simulation rewards ethical behavior (low carbon footprint) to mirror real-world ESG values.",
+        50: "Educational Intent: The ultimate goal is pedagogical—using games to improve student understanding of ethics."
+    },
+    // Structure Section
+    s2: {
+        1: "Negative Inversion: When a sentence begins with 'Rarely', the subject and auxiliary must be inverted (Rarely does...).",
+        2: "Subjunctive Mode: Words like 'imperative' trigger the subjunctive. The verb following 'that' must be base form (adjust).",
+        3: "Reduced Clause: Passive voice reduction. 'Because they were alarmed' shortens to 'Alarmed'.",
+        4: "Correlative Inversion: 'Not only' at the start requires inversion in the first clause (did it reduce).",
+        5: "Passive Subjunctive: 'Requested that... be conducted'. Passive subjunctive uses be + V3.",
+        6: "Prepositional Phrase: 'The complexity...' is a noun phrase, so it requires 'Due to', not 'Because'.",
+        7: "Correlative Pair: 'Neither' must always be paired with 'nor'.",
+        8: "Active Reduced Clause: 'Occur' is intransitive. Active reduction uses V-ing ('Occurring').",
+        9: "Inversion with 'So': 'So + Adj' at the start triggers inversion -> 'was the competition'.",
+        10: "Double Comparative: 'The more..., the less...'. Requires parallel comparative structure.",
+        11: "Passive Reduction: Derived from 'which are supported', reduced to just V3 ('supported').",
+        12: "'Only After' Inversion: Restrictive phrase at start triggers inversion -> 'did the management begin'.",
+        13: "Third Conditional: Inverted form 'Had the treasury...' equals 'If the treasury had... would have adopted'.",
+        14: "Parallel Structure: All items must be nouns. 'Market demand' matches 'tensions' and 'quotas'.",
+        15: "Noun Clause Subject: 'What' functions as the subject (meaning 'The thing that').",
+        16: "Subject-Verb Agreement: 'The prices' (plural) requires 'cause' (without s).",
+        17: "Parallel Structure: 'maximizing', 'expanding' -> requires 'improving' (gerund).",
+        18: "Conjunction vs Prep: A full clause follows, so use 'Although' instead of 'Despite'.",
+        19: "Pronoun Agreement: 'The investor' is singular, so use 'his or her' (not 'their' - traditionally).",
+        20: "Confusing Verbs: 'Founded' (established) is correct, not 'Found' (located).",
+        21: "Subjunctive Mode: 'requires that... act' (base form), not 'acts'.",
+        22: "Word Form: After 'widespread' (adj), a noun is needed -> 'acceptance'.",
+        23: "Adverb vs Adj: To modify 'risen' (verb), use adverb 'sharply'.",
+        24: "Subject-Verb Agreement: 'The manager' (singular) requires 'is'. 'Together with' doesn't change number.",
+        25: "Double Subject: 'The merger' is the subject. Remove redundant 'it'.",
+        26: "Countable Nouns: 'Economists' are countable, use 'Many', not 'Much'.",
+        27: "Relative Pronouns: Acts as subject for 'possesses', so use 'Who', not 'Whom'.",
+        28: "Determiners: 'Most of' requires 'the'. Use 'Most European nations' or 'Most of the...'.",
+        29: "Double Conjunction: Cannot use 'Although' and 'but' together. Remove 'but'.",
+        30: "Faulty Comparison: Compare efficiency to efficiency -> 'that of the old one'.",
+        31: "Connectors: Full clause follows, use 'Because', not 'Because of'.",
+        32: "Subject-Verb Agreement: 'Results' (plural) -> 'indicate' (no s).",
+        33: "Uncountable Nouns: 'Information' is singular -> 'was'.",
+        34: "Proximity Rule: With 'Neither...nor', verb agrees with closer subject ('CFO') -> 'was'.",
+        35: "Double Comparative: 'Better' is already comparative. 'More better' is wrong.",
+        36: "Gerund after Prep: After 'conducted' is wrong. Should be 'After conducting'.",
+        37: "Comparative Degree: 'Than' implies comparison -> 'more unequal', not 'most'.",
+        38: "Diction: 'Founding' means establishing. 'Funding' (money) is needed here.",
+        39: "Word Form: 'Effect' is a noun. Verb is 'Affect' (affects).",
+        40: "Infinitive Phrase: 'Tend to' takes base verb -> 'spend', not 'spending'."
+    },
+    // Reading Section
+    s3: {
+        1: "Main Idea: The text explores 'dark flow' as a challenge to the established 'Cosmological Principle'.",
+        2: "Vocab: In this context, 'posits' means to assume or suggest as a theoretical basis.",
+        3: "Detail: The principle suggests the universe is identical (isotropic/homogeneous) in every direction.",
+        4: "Inference: Dark flow describes coherent motion, which contradicts (does not align with) uniform expansion.",
+        5: "Purpose: The Sunyaev-Zel'dovich (SZ) effect is mentioned as the tool used to detect the cluster movement.",
+        6: "Vocab: 'Vestigial' refers to a remnant or trace from an earlier era.",
+        7: "Inference: The cause is suggested to lie beyond the cosmic horizon (outside observable universe).",
+        8: "Definition: The cosmic horizon is the limit from which light has had time to reach us.",
+        9: "Tone: The author presents both sides (proponents and critics) in a balanced, neutral way.",
+        10: "Implication: Verifying dark flow would require a radical recalibration of physical laws.",
+        11: "Main Idea: Passage discusses Srivijaya's economic strengths vs its political fragility.",
+        12: "Vocab: 'Conduits' refers to channels or routes for trade (Straits of Malacca).",
+        13: "Detail: Power was derived from commanding the straits (maritime checkpoints).",
+        14: "Vocab: 'Entrepôts' are commercial trading centers/ports.",
+        15: "Concept: 'Mandala' is a fluid political structure based on mutual benefit, not rigid central law.",
+        16: "Reasoning: Buddhism served as 'symbolic glue' to validate power and attract scholars.",
+        17: "Vocab: 'Shocks' refers to sudden destabilizing events (like the Chola raid).",
+        18: "Effect: The Chola raid fractured the empire's prestige, triggering decline.",
+        19: "Vocab: 'Protracted' means prolonged or lasting a long time.",
+        20: "Negative Detail: The text mentions raids and competition, but never a drought.",
+        21: "Main Point: Enzymes accelerate reactions by lowering activation energy.",
+        22: "Vocab: 'Deleterious' means causing harm or damage.",
+        23: "Vocab: 'Circumvent' means to find a way around an obstacle.",
+        24: "Definition: Transition state is a high-energy, short-lived configuration.",
+        25: "Concept: Enzymes speed up rates but do not change the final equilibrium (Delta G).",
+        26: "Vocab: 'Sequestered' means isolated or hidden away.",
+        27: "Concept: 'Induced fit' implies the enzyme is dynamic (changes shape), not static.",
+        28: "Detail: Hydrogen bonding is a mechanism of non-covalent stabilization.",
+        29: "Vocab: 'Surmount' means to overcome or cross a barrier.",
+        30: "Negative Detail: The active site is hydrophobic/sequestered, not exposed to water.",
+        31: "Main Idea: Text analyzes how human activity interferes with trophic hierarchies.",
+        32: "Vocab: 'Propagates' refers to effects spreading downward through the chain.",
+        33: "Vocab: 'Extirpation' means localized extinction of a species.",
+        34: "Concept: Trophic cascade is a chain reaction from losing a top predator.",
+        35: "Definition: A species whose loss destabilizes the biome is a 'Keystone' species.",
+        36: "Effect: Without crab predators, snails graze uncontrollably on the grass.",
+        37: "Vocab: 'Poignant' means a particularly clear or impactful example.",
+        38: "Implication: Loss of marsh grass affects carbon sequestration (global climate).",
+        39: "Vocab: 'Destabilizes' means to make unsteady or prone to collapse.",
+        40: "Tone: Data-driven analysis mixed with worry (Concerned/Analytical).",
+        41: "Main Idea: Re-assessing the negative health/social costs of the Neolithic revolution.",
+        42: "Vocab: 'Precarious' means uncertain, risky, or unstable.",
+        43: "Concept: 'Whiggish' is a bias viewing history as inevitable progress.",
+        44: "Vocab: 'Precipitated' means triggered or caused to happen suddenly.",
+        45: "Evidence: Skeletal remains show disease/malnutrition (nutritional stress).",
+        46: "Vocab: 'Conspicuously' means noticeably or clearly visible.",
+        47: "Contrast: Paleolithic was egalitarian; Neolithic introduced hierarchy.",
+        48: "Cause: Surplus grain management led to social stratification (classes).",
+        49: "Vocab: 'Nascent' means just beginning to exist/emerging.",
+        50: "Symbolism: Architecture served as an ideological manifestation of power."
+    }
+};
+
+/* ================= ANSWER KEY LOGIC ================= */
+let currentKeySec = 1;
+
+function showAnswerKey() {
+    document.getElementById('answerKeyModal').classList.remove('hidden');
+    renderKeySection(1);
+}
+
+function closeAnswerKey() {
+    document.getElementById('answerKeyModal').classList.add('hidden');
+}
+
+function renderKeySection(sec) {
+    currentKeySec = sec;
+    const container = document.getElementById('keyContent');
+    const questions = sec === 1 ? Q_LISTENING : sec === 2 ? Q_STRUCTURE : Q_READING;
+    const keys = sec === 1 ? DB_KEYS.s1 : sec === 2 ? DB_KEYS.s2 : DB_KEYS.s3;
+    const explanations = sec === 1 ? EXPLANATIONS.s1 : sec === 2 ? EXPLANATIONS.s2 : EXPLANATIONS.s3;
+    
+    // Update Tabs
+    [1,2,3].forEach(i => {
+        const tab = document.getElementById(`keyTab${i}`);
+        if(i === sec) tab.className = "px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600 transition";
+        else tab.className = "px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition";
+    });
+
+    let html = '';
+    
+    questions.forEach((qItem, index) => {
+        const qNum = index + 1;
+        const correctKey = keys[index];
+        const userKey = state.ans[`s${sec}_${index}`];
+        const isCorrect = userKey === correctKey;
+        const explanationText = explanations[qNum] || "No explanation available.";
+        
+        // Reading Passage Title (Only once per passage)
+        let passageHeader = '';
+        if (sec === 3 && qItem.p) {
+             const prevQ = questions[index-1];
+             if (!prevQ || prevQ.p !== qItem.p) {
+                 passageHeader = `<div class="bg-slate-100 p-2 rounded text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 mt-4">Passage ${qItem.p}</div>`;
+             }
+        }
+
+        html += `
+        ${passageHeader}
+        <div class="key-card ${isCorrect ? 'correct' : 'wrong'}">
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">${qNum}</span>
+                    <span class="${isCorrect ? 'badge-correct' : 'badge-wrong'}">
+                        ${isCorrect ? 'Correct' : 'Incorrect'}
+                    </span>
+                </div>
+                <div class="text-xs font-mono text-slate-400">Answer: ${correctKey}</div>
+            </div>
+            
+            <p class="text-sm text-slate-800 font-medium mb-2">${qItem.q}</p>
+            
+            <div class="text-xs text-slate-500 grid grid-cols-2 gap-2 mb-3 bg-white p-2 rounded border border-slate-100">
+                <div>Your Answer: <span class="font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-500'}">${userKey || '-'}</span></div>
+                <div>Correct Answer: <span class="font-bold text-emerald-600">${correctKey}</span></div>
+            </div>
+
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <div class="text-[10px] uppercase font-bold text-blue-400 mb-1">Expert Analysis</div>
+                <p class="text-sm text-blue-900 leading-relaxed">${explanationText}</p>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
 </script>
 </body>
 </html>
+
