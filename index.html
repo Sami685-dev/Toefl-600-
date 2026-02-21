@@ -453,11 +453,30 @@ const Q_READING = [
 
 // KEYS & SCORING
 const DB_KEYS = {
-    s1: ['A','B','C','D','A','B','C','D','A','B','C','B','D','A','B','C','A','B','C','D','A','B','C','A','B','C','D','A','B','C','B','A','C','D','B','A','C','D','B','C','A','D','B','A','C','D','B','A','C','B'],
-    s2: ['A','B','C','B','A','B','C','A','B','C','C','C','B','B','A','D','D','A','B','A','D','C','C','C','B','A','C','B','A','D','B','B','B','C','C','A','C','B','D','C'],
-    s3: ['B','A','C','C','A','B','B','C','C','C','C','B','A','C','C','B','C','C','B','D','C','B','A','C','B','B','C','B','B','C','C','B','C','C','A','C','C','B','A','B','B','B','B','C','B','B','C','B','B','B']
+    // Section 1: Listening (1-50) - Sudah Sinkron dengan Transkrip Baru
+    s1: [
+        'C','B','D','B','B','B','C','A','B','C', // 1-10
+        'C','B','B','B','C','B','B','C','C','A', // 11-20
+        'B','C','C','B','B','B','B','C','B','B', // 21-30 (Custom FEB UI)
+        'B','C','C','B','B','B','C','C','B','C', // 31-40
+        'B','B','B','C','C','C','A','B','C','B'  // 41-50
+    ],
+    // Section 2: Structure (1-40) - Standar TOEFL ITP 600+
+    s2: [
+        'A','B','C','B','A','B','C','A','B','C',
+        'C','C','B','B','A','D','D','A','B','A',
+        'D','C','C','C','B','A','C','B','A','D',
+        'B','B','B','C','C','A','C','B','D','C'
+    ],
+    // Section 3: Reading (1-50) - Sesuai dengan 5 Passage (Dark Flow, Srivijaya, dll)
+    s3: [
+        'B','A','C','C','A','B','B','C','C','C',
+        'C','B','A','C','C','B','C','C','B','D',
+        'C','B','A','C','B','B','C','B','B','C',
+        'C','B','C','C','A','C','C','B','A','B',
+        'B','B','B','C','B','B','C','B','B','B'
+    ]
 };
-
 const DB_CONV = {
     s1: [31,31,31,32,32,32,33,33,34,34,35,35,36,36,37,37,38,38,39,39,40,40,41,41,42,42,43,43,44,44,45,45,46,46,47,47,48,48,49,49,50,50,51,52,53,54,56,58,60,63,68],
     s2: [31,31,31,32,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,65,66,67,68,68,68],
@@ -467,59 +486,58 @@ const DB_CONV = {
 // EXPLANATIONS (NEW DATA)
 const EXPLANATIONS = {
     s1: {
-        1: "Paraphrasing: The idiom 'eating into' means to reduce the amount or value of something, in this case, consumer savings.",
-        2: "Negation/Suggestion: The phrase 'Not unless' suggests that the report is currently flawed (contains typos) and needs revision.",
-        3: "Idiom: 'Barely keep my eyes open' is a common expression indicating extreme boredom or lack of engagement.",
-        4: "Suggestion: The woman points out Sami’s expertise, implying the man should seek his professional advice for the BCG Matrix.",
-        5: "Idiom: 'On the drawing board' means a project or idea is still being planned and has not yet been implemented.",
-        6: "Idiom: 'Biting off more than you can chew' means attempting to do something that is too difficult for one’s capacity.",
-        7: "Tone/Sarcasm: 'That’s just great' is used sarcastically to express frustration over an inconvenient event.",
-        8: "Metaphor: Being 'buried under a pile' indicates that the desk is disorganized, making it difficult to find documents.",
-        9: "Idiom: 'Step on it' is an informal way to tell someone to hurry or move faster to meet a deadline.",
-        10: "Direct Suggestion: The woman offers her 'spare' (extra) tool, which is a direct offer to lend the item.",
-        11: "Implied Refusal: Usually involves the speaker mentioning a heavy workload, indicating they cannot assist.",
-        12: "Paraphrasing: Positive results often involve phrases like 'surpassed expectations' or 'exceeded the target.'",
-        13: "Spatial Reference: Indicates a close physical proximity within a building (across the hall).",
-        14: "Time Expression: Terms like 'pushed back' or 'rescheduled' indicate a delay in the original plan.",
-        15: "Agreement: Phrases like 'You can say that again' or 'I'll say' indicate strong concurrence.",
-        16: "Inference: A discussion about strictly enforced deadlines implies the professor does not allow late submissions.",
-        17: "Context: 'Fluctuated' or 'up and down' refers to market volatility, common in Sharia finance discussions.",
-        18: "Direct Action: The speaker mentions a need to obtain official academic records from the registrar.",
-        19: "Time Management: Expressions like 'dragged on' or 'ran over' indicate the meeting exceeded its schedule.",
-        20: "Inference: If many apply and few are chosen, the position is described as 'stiff competition'.",
-        21: "Idiom: To 'polish' something means to refine or improve it to make it more professional.",
-        22: "Price Evaluation: Words like 'steep' or 'rip-off' signify that the cost is too high for the value provided.",
-        23: "Factual Detail: The speaker was unaware of a change because they were absent or not paying attention.",
-        24: "Status Update: 'Getting a facelift' or 'being fixed up' refers to construction or renovation work.",
-        25: "Environmental Interference: High background noise levels prevent the listener from focusing on the speech.",
-        26: "Idiom: If something is 'over one's head,' it means the complexity of the material was beyond their understanding.",
-        27: "Idiom: 'Cold feet' refers to becoming nervous or losing courage right before a significant event.",
-        28: "Conclusion: 'After all' indicates that despite previous doubts, the final result was positive.",
-        29: "Regret (Modal): 'Should have' followed by a past participle expresses a wish for a different past action.",
-        30: "Personality/Tone: A policy or person described as 'approachable' is easy to understand or deal with.",
-        31: "Main Idea: The dialogue centers on a specific project regarding Halal Risk in Padang hotels.",
-        32: "Detail: The woman explicitly mentions her focus on how 'reputation' affects Sharia compliance.",
-        33: "Future Action: They agree that primary data collection (interviews) is the next logical step.",
-        34: "Time Detail: Standard academic deadlines are often explicitly stated toward the end of the conversation.",
-        35: "Goal Identification: The project aims to bridge the digital gap for village businesses through digital payments (QRIS).",
-        36: "Target Audience: The beneficiaries of the Youth Ranger program are the local entrepreneurs (SMEs).",
-        37: "Organizational Detail: As leaders, their primary administrative duty is to finalize the project’s TOR.",
-        38: "Conflict/Challenge: Managing a large, diverse team of 51 people is highlighted as the main difficulty.",
-        39: "Main Point: The lecturer emphasizes the expansion and increasing relevance of the Sharia sector.",
-        40: "Definition: Unlike conventional bonds (debt), a Sukuk represents a partial ownership of an underlying asset.",
-        41: "Institutional Role: The OJK is defined by its oversight and regulatory functions.",
-        42: "Follow-up: Academic talks usually conclude by mentioning the practical application (stock valuation).",
-        43: "Functional Logic: The IE Matrix helps firms decide which divisions to grow, hold, or divest.",
-        44: "Matrix Components: The cells categorize business units into strategic groups like 'Grow and Build'.",
-        45: "Specific Mapping: Cell 1 (high internal/external scores) always falls into the 'Grow and Build' category.",
-        46: "Strategic Value: Managers use this matrix to move away from intuition toward analytical decision-making.",
-        47: "Innovative Approach: The talk highlights how games can simplify complex sustainability (ESG) concepts.",
-        48: "Standard Acronym: ESG stands for Environmental, Social, and Governance.",
-        49: "Game Mechanics: The simulation rewards ethical behavior (low carbon footprint) to mirror real-world ESG values.",
-        50: "Educational Intent: The ultimate goal is pedagogical—using games to improve student understanding of ethics."
-    },
+        1: "The man implies the exam will be challenging because the professor is known for tricky questions.",
+        2: "The woman just brewed coffee, meaning there is plenty of fresh coffee available.",
+        3: "The man agrees that the lecture was very long and boring (could barely stay awake).",
+        4: "The professor will only accept the assignment late if there is a compelling medical reason.",
+        5: "The phrase 'work cut out for me' means the man has a lot of difficult work to handle.",
+        6: "The woman implies that taking 21 credits is too risky or overwhelming (overextending).",
+        7: "The financial statement is currently being prepared (in the works) and will be finished by lunch.",
+        8: "The competition is 'stiff', meaning the other competitors are very strong.",
+        9: "The man feels unlucky or frustrated because he needs to cash his check on a holiday.",
+        10: "They should take the stairs because the elevator is broken (out of order).",
+        11: "Time passed very quickly (in the blink of an eye), meaning the semester ended fast.",
+        12: "The woman doesn't have a stapler (all out) and suggests looking at another desk.",
+        13: "The man implies the woman is already too busy (enough on her plate) for a new business.",
+        14: "The woman offers to lend her calculator to the man for his finance quiz.",
+        15: "The phrase 'kept us on our toes' means the training required constant attention and effort.",
+        16: "The woman suggests seeking corporate sponsorships (external funding).",
+        17: "The fluctuation in gold prices makes the investors (Investment Club) nervous or concerned.",
+        18: "The woman's advice is to improve or refine the resume (polish it) immediately.",
+        19: "Purchasing power 'taking a hit' means consumers can afford to buy fewer things.",
+        20: "The woman had previously assumed the meeting would be held in the auditorium.",
+        21: "The woman suggests the man immediately apply for the internship at Amartha before tonight's deadline.",
+        22: "Portfolio fluctuation means the man is experiencing significant changes in his stock prices.",
+        23: "The woman implies the professor will support the creative idea of using a board game.",
+        24: "The word 'streamline' indicates the system the woman created is highly efficient and well-organized.",
+        25: "The top floor of the FEB library is recommended because it is usually quiet on Friday afternoons.",
+        26: "The man implies there will be a second wave of registration, giving the woman another chance.",
+        27: "The QRIS feature is considered essential (a requirement) to improve SME efficiency.",
+        28: "The man encourages her, stating that a 3.5 GPA target is still possible to achieve (within reach).",
+        29: "The simulation was made interactive so that test prep doesn't feel boring (engaging).",
+        30: "The coffee service is closed, so the man directs her to the vending machine.",
+        31: "The main topic of discussion is the seminar on integrating Sharia principles with ESG.",
+        32: "The man wants the seminar data to develop his strategic board game simulation.",
+        33: "The speaker is a senior analyst from NEX who is an expert in Green Sukuk.",
+        34: "Online registration must be completed by this Friday at the latest.",
+        35: "The community service program is focused on Mandalawangi Village.",
+        36: "The specific training for local SMEs is about QRIS and marketplace accounts.",
+        37: "The main unresolved issue is the confirmation of transportation (bus rentals).",
+        38: "The final briefing for all division leaders will be held this Saturday.",
+        39: "The lecture topic is the screening process for Sharia stocks to be listed on the DES.",
+        40: "The maximum limit for interest-based debt is 45% of total company assets.",
+        41: "Non-halal revenue is strictly prohibited from exceeding the 10% threshold.",
+        42: "This information is highly useful for a Sharia stock analyst.",
+        43: "The IE Matrix is used as a tool to map the strategic position of a company's business units.",
+        44: "The matrix axes represent the internal (IFE) and external (EFE) evaluation scores.",
+        45: "The strategy in Cell 1 (Grow and Build) includes market penetration and product development.",
+        46: "A standard IE Matrix consists of a total of nine cells.",
+        47: "ESG stands for Environmental, Social, and Governance.",
+        48: "The simulation game focuses on balancing corporate profit with environmental sustainability.",
+        49: "Extra points are awarded if a player successfully reduces carbon emissions.",
+        50: "The game helps students visualize the long-term impacts of their decisions."    },
     s2: {
-        1: "Negative Inversion: When a sentence begins with 'Rarely', the subject and auxiliary must be inverted (Rarely does...).",
+        1: "Inversion: Sentences beginning with 'Rarely' require an 'Auxiliary + Subject' structure (does a company).",
         2: "Subjunctive Mode: Words like 'imperative' trigger the subjunctive. The verb following 'that' must be base form (adjust).",
         3: "Reduced Clause: Passive voice reduction. 'Because they were alarmed' shortens to 'Alarmed'.",
         4: "Correlative Inversion: 'Not only' at the start requires inversion in the first clause (did it reduce).",
@@ -534,7 +552,7 @@ const EXPLANATIONS = {
         13: "Third Conditional: Inverted form 'Had the treasury...' equals 'If the treasury had... would have adopted'.",
         14: "Parallel Structure: All items must be nouns. 'Market demand' matches 'tensions' and 'quotas'.",
         15: "Noun Clause Subject: 'What' functions as the subject (meaning 'The thing that').",
-        16: "Subject-Verb Agreement: 'The prices' (plural) requires 'cause' (without s).",
+        16: "Subject-Verb Agreement: The subject 'prices' is plural, so the verb must be 'cause' (without an 's').",
         17: "Parallel Structure: 'maximizing', 'expanding' -> requires 'improving' (gerund).",
         18: "Conjunction vs Prep: A full clause follows, so use 'Although' instead of 'Despite'.",
         19: "Pronoun Agreement: 'The investor' is singular, so use 'his or her' (not 'their' - traditionally).",
@@ -548,7 +566,7 @@ const EXPLANATIONS = {
         27: "Relative Pronouns: Acts as subject for 'possesses', so use 'Who', not 'Whom'.",
         28: "Determiners: 'Most of' requires 'the'. Use 'Most European nations' or 'Most of the...'.",
         29: "Double Conjunction: Cannot use 'Although' and 'but' together. Remove 'but'.",
-        30: "Faulty Comparison: Compare efficiency to efficiency -> 'that of the old one'.",
+        30: "Comparison: When comparing 'efficiency', it should be 'than that of the old one'.",
         31: "Connectors: Full clause follows, use 'Because', not 'Because of'.",
         32: "Subject-Verb Agreement: 'Results' (plural) -> 'indicate' (no s).",
         33: "Uncountable Nouns: 'Information' is singular -> 'was'.",
@@ -558,10 +576,10 @@ const EXPLANATIONS = {
         37: "Comparative Degree: 'Than' implies comparison -> 'more unequal', not 'most'.",
         38: "Diction: 'Founding' means establishing. 'Funding' (money) is needed here.",
         39: "Word Form: 'Effect' is a noun. Verb is 'Affect' (affects).",
-        40: "Infinitive Phrase: 'Tend to' takes base verb -> 'spend', not 'spending'."
+        40: "Infinitive: 'Tend to' is always followed by a base verb (spend), not a V-ing form."
     },
     s3: {
-        1: "Main Idea: The text explores 'dark flow' as a challenge to the established 'Cosmological Principle'.",
+       1: "Main Idea: This text discusses the challenge to the 'Cosmological Principle' through the phenomenon of dark flow.",
         2: "Vocab: In this context, 'posits' means to assume or suggest as a theoretical basis.",
         3: "Detail: The principle suggests the universe is identical (isotropic/homogeneous) in every direction.",
         4: "Inference: Dark flow describes coherent motion, which contradicts (does not align with) uniform expansion.",
@@ -571,7 +589,7 @@ const EXPLANATIONS = {
         8: "Definition: The cosmic horizon is the limit from which light has had time to reach us.",
         9: "Tone: The author presents both sides (proponents and critics) in a balanced, neutral way.",
         10: "Implication: Verifying dark flow would require a radical recalibration of physical laws.",
-        11: "Main Idea: Passage discusses Srivijaya's economic strengths vs its political fragility.",
+        11: "Main Idea: The focus is on Srivijaya's maritime strength and its fragility within the mandala system.",
         12: "Vocab: 'Conduits' refers to channels or routes for trade (Straits of Malacca).",
         13: "Detail: Power was derived from commanding the straits (maritime checkpoints).",
         14: "Vocab: 'Entrepôts' are commercial trading centers/ports.",
@@ -590,7 +608,7 @@ const EXPLANATIONS = {
         27: "Concept: 'Induced fit' implies the enzyme is dynamic (changes shape), not static.",
         28: "Detail: Hydrogen bonding is a mechanism of non-covalent stabilization.",
         29: "Vocab: 'Surmount' means to overcome or cross a barrier.",
-        30: "Negative Detail: The active site is hydrophobic/sequestered, not exposed to water.",
+        30: "Negative Detail: The active site is located in a sequestered/hydrophobic environment, not exposed to water.",
         31: "Main Idea: Text analyzes how human activity interferes with trophic hierarchies.",
         32: "Vocab: 'Propagates' refers to effects spreading downward through the chain.",
         33: "Vocab: 'Extirpation' means localized extinction of a species.",
@@ -610,7 +628,7 @@ const EXPLANATIONS = {
         47: "Contrast: Paleolithic was egalitarian; Neolithic introduced hierarchy.",
         48: "Cause: Surplus grain management led to social stratification (classes).",
         49: "Vocab: 'Nascent' means just beginning to exist/emerging.",
-        50: "Symbolism: Architecture served as an ideological manifestation of power."
+        50: "Symbolism: Monumental architecture of the Neolithic era served as an ideological manifestation of power."
     }
 };
 
@@ -907,4 +925,5 @@ function renderKeySection(sec) {
 </script>
 </body>
 </html>
+
 
